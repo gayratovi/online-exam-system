@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Create Exam</title>
+</head>
+<body>
+    <h2>Create New Exam</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create Exam</button>
+    </form>
+
+    <p><a href="{% url 'logout' %}">Logout</a></p>
+</body>
+</html>

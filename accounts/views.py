@@ -15,7 +15,7 @@ def register_view(request):
 
             # Redirect based on role
             if user.role == 'admin':
-                return redirect('add_question')
+                return redirect('create_exam')
             elif user.role == 'student':
                 return redirect('student_dashboard')
     else:
@@ -32,7 +32,7 @@ def login_view(request):
 
             # Redirect based on role
             if user.role == 'admin':
-                return redirect('add_question')
+                return redirect('create_exam')
             elif user.role == 'student':
                 return redirect('student_dashboard')
     else:

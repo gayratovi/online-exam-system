@@ -22,4 +22,5 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('', include('accounts.urls')),  # Optional: redirect home to login/register
     path('questions/', include('questions.urls')),
+    path('exams/', include('exams.urls')),
 ]
