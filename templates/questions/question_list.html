@@ -1,26 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>All Questions</title>
 </head>
 <body>
     <h2>Question Bank</h2>
 
-    <table border="1">
-        <tr>
-            <th>Type</th>
-            <th>Question</th>
-            <th>Correct Answer</th>
-        </tr>
-        {% for question in questions %}
-        <tr>
-            <td>{{ question.question_type }}</td>
-            <td>{{ question.question_text }}</td>
-            <td>{{ question.correct_answer }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="3">No questions found.</td></tr>
-        {% endfor %}
+    <table style="border-collapse: collapse; border: 1px solid black;">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Question</th>
+                <th>Correct Answer</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for question in questions %}
+            <tr>
+                <td>{{ question.question_type }}</td>
+                <td>{{ question.question_text }}</td>
+                <td>{{ question.correct_answer }}</td>
+                <td>
+                    <a href="{% url 'edit_question' question.id %}">Edit</a>
+                </td>
+                <td>
+                     <a href="{% url 'delete_question' question.id %}">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No questions found.</td></tr>
+            {% endfor %}
+        </tbody>
     </table>
 
     <p><a href="{% url 'add_question' %}">Add New Question</a></p>
