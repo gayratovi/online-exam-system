@@ -26,7 +26,7 @@ def question_list_view(request):
     if request.user.role != 'admin':
         return redirect('login')  # Or a 403 page later
 
-    questions = Question.objects.all()
+    questions = Question.objects.filter(module=request.user.module)
     return render(request, 'questions/question_list.html', {'questions': questions})
 
 @login_required
