@@ -1,7 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from accounts.models import CustomUser
 from .forms import QuestionForm
+from .models import Question
+
+@login_required
+def question_list_view(request):
+    if request.user.role != 'admin':
+        return redirect('login')  # Or a 403 page later
+
+    questions = Question.objects.all()
+    return render(request, 'questions/question_list.html', {'questions': questions})
 
 @login_required
 def add_question_view(request):
