@@ -38,6 +38,8 @@ def add_question_view(request):
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
+            question = form.save(commit=False)
+            question.module = request.user.module
             form.save()
             return redirect('add_question')  # Redirect to same page after adding
     else:

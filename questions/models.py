@@ -1,4 +1,5 @@
 from django.db import models
+from accounts.models import Module
 
 class Question(models.Model):
     QUESTION_TYPES = (
@@ -9,6 +10,7 @@ class Question(models.Model):
 
     question_text = models.TextField()
     question_type = models.CharField(max_length=4, choices=QUESTION_TYPES)
+    module = models.ForeignKey(Module, on_delete=models.CASCADE)
 
     # For MCQ only
     option_a = models.CharField(max_length=255, blank=True, null=True)
