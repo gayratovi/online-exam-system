@@ -53,3 +53,11 @@ def student_dashboard(request):
 @login_required
 def admin_dashboard(request):
     return render(request, 'accounts/admin_dashboard.html')
+
+@login_required
+def role_based_redirect(request):
+    if request.user.role == 'admin':
+        return redirect('admin_dashboard')  # already defined above
+    elif request.user.role == 'student':
+        return redirect('student_dashboard')
+    return redirect('login')
