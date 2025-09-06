@@ -1,3 +1,6 @@
 <h2>Welcome, Student!</h2>
 <p>You are logged in as a student.</p>
-<a href="{% url 'logout' %}">Logout</a>
+<ul>
+    <li><a href="{% url 'student_exam_list' %}">Available Exams</a></li>
+    <li><a href="{% url 'logout' %}">Logout</a></li>
+</ul>

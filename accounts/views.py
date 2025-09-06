@@ -14,8 +14,8 @@ def register_view(request):
             login(request, user)
 
             # Redirect based on role
-            if user.role == 'admin':
-                return redirect('create_exam')
+            if user.role == 'staff':
+                return redirect('staff_dashboard')
             elif user.role == 'student':
                 return redirect('student_dashboard')
     else:
@@ -31,8 +31,8 @@ def login_view(request):
             login(request, user)
 
             # Redirect based on role
-            if user.role == 'admin':
-                return redirect('create_exam')
+            if user.role == 'staff':
+                return redirect('staff_dashboard')
             elif user.role == 'student':
                 return redirect('student_dashboard')
     else:
@@ -51,13 +51,15 @@ def student_dashboard(request):
 
 
 @login_required
-def admin_dashboard(request):
-    return render(request, 'accounts/admin_dashboard.html')
+def staff_dashboard(request):
+    if request.user.role != 'staff':
+        return redirect('login')
+    return render(request, 'accounts/staff_dashboard.html')
 
 @login_required
 def role_based_redirect(request):
-    if request.user.role == 'admin':
-        return redirect('admin_dashboard')  # already defined above
+    if request.user.role == 'staff':
+        return redirect('staff_dashboard')  # already defined above
     elif request.user.role == 'student':
         return redirect('student_dashboard')
     return redirect('login')

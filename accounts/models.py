@@ -12,7 +12,7 @@ class Module(models.Model):
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('student', 'Student'),
-        ('admin', 'Admin'),
+        ('staff', 'Staff'),
     )
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
     module = models.ForeignKey(Module, on_delete=models.SET_NULL, null=True, blank=True)
