@@ -11,9 +11,20 @@ class ExamCreationForm(forms.ModelForm):
 
     class Meta:
         model = Exam
-        fields = ['title', 'description', 'is_active', 'questions']
+        fields = ['title', 'description', 'is_active', 'opens_at', 'closes_at', 'duration_minutes', 'questions']
+        widgets = {
+            'opens_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'closes_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user')  # Expect the current user to be passed in
+        user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
         self.fields['questions'].queryset = Question.objects.filter(module=user.module)
+
+    def clean(self):
+        cleaned = super().clean()
+        o, c = cleaned.get('opens_at'), cleaned.get('closes_at')
+        if o and c and c <= o:
+            raise forms.ValidationError('Closes at must be after Opens at.')
+        return cleaned

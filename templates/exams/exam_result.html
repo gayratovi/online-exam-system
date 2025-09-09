@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ exam.title }} – Result</title>
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+        .scorebox { 
+            margin: 12px 0; 
+            padding: 12px; 
+            border-radius: 8px; 
+            background: #f7f7f7; 
+            font-size: 18px;
+        }
+        .scorebox strong { font-size: 22px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+        th { background: #f7f7f7; text-align: left; }
+        .correct { color: green; font-weight: bold; }
+        .wrong { color: #a00; font-weight: bold; }
+        .backlink { margin-top: 16px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h2>{{ exam.title }} – Your Result</h2>
+
+    <div class="scorebox">
+        <p><strong>Score: {{ score }}%</strong></p>
+        <p>Correct: {{ correct }} / {{ total }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Question</th>
+                <th>Your Answer</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in answers %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ a.question.question_text }}</td>
+                <td>{{ a.selected_answer }}</td>
+                <td>
+                    {% if a.is_correct %}
+                        <span class="correct">✅ Correct</span>
+                    {% else %}
+                        <span class="wrong">❌ Wrong</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a class="backlink" href="{% url 'student_dashboard' %}">← Back to Dashboard</a>
+</body>
+</html>

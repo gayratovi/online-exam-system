@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ exam.title }} — Per-Question Stats</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:20px; }
+    h1 { font-size: 20px; margin: 0; }
+    nav a { text-decoration:none; margin-left:10px; color:#0d6efd; }
+    nav a:hover { text-decoration:underline; }
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background:#f7f7f7; text-align:left; }
+  </style>
+</head>
+<body>
+  {% include "partials/staff_header.html" %}
+
+  <h2>{{ exam.title }} — Per-Question Stats</h2>
+
+  <p>
+    <a href="{% url 'staff_exam_results' exam.id %}">← Back to Results</a> |
+    <a href="{% url 'staff_results_overview' %}">📊 Results Overview</a>
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Question</th>
+        <th>Attempts</th>
+        <th>Correct</th>
+        <th>% Correct</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in qrows %}
+      <tr>
+        <td>{{ r.n }}</td>
+        <td>{{ r.text }}</td>
+        <td>{{ r.attempts }}</td>
+        <td>{{ r.correct }}</td>
+        <td>{% if r.pct is not None %}{{ r.pct }}%{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

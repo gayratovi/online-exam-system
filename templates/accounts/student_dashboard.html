@@ -1,6 +1,113 @@
-<h2>Welcome, Student!</h2>
-<p>You are logged in as a student.</p>
-<ul>
-    <li><a href="{% url 'student_exam_list' %}">Available Exams</a></li>
-    <li><a href="{% url 'logout' %}">Logout</a></li>
-</ul>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>CSSS – Student Dashboard</title>
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
+        header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; }
+        h1 { font-size: 22px; margin: 0; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+        th { background: #f7f7f7; text-align: left; }
+        .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #ddd; }
+        .pill-open { background:#e8f6ef; color:#0f5132; border-color:#badbcc; }
+        .pill-closed { background:#fdecea; color:#842029; border-color:#f5c2c7; }
+        .pill-progress { background:#fff3cd; color:#664d03; border-color:#ffecb5; }
+        .actions a { padding:4px 10px; background:#0d6efd; color:white; border-radius:4px; text-decoration:none; }
+        .actions a:hover { background:#0b5ed7; }
+        
+         /* 🔔 Messages styling */
+        ul.messages { list-style: none; padding: 0; margin: 0 0 15px 0; }
+        ul.messages li { padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; }
+        ul.messages li.error { background: #fdecea; color: #842029; border: 1px solid #f5c2c7; }
+        ul.messages li.success { background: #e8f6ef; color: #0f5132; border: 1px solid #badbcc; }
+        ul.messages li.info { background: #e7f1ff; color: #084298; border: 1px solid #b6d4fe; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Computer Science Success School (CSSS)</h1>
+        <nav>
+            <a href="{% url 'logout' %}">Logout</a>
+        </nav>
+    </header>
+
+        {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+            {{ message }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    
+    <section>
+        <h2>Student Dashboard</h2>
+        <p><strong>Name:</strong> {{ request.user.get_full_name|default:request.user.username }}</p>
+        <p><strong>Student ID:</strong> {{ request.user.id }}</p>
+        <p><strong>Email:</strong> {{ request.user.email }}</p>
+    </section>
+
+    <section>
+        <h3>Your Modules & Exams</h3>
+        {% if modules %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Exam</th>
+                    <th>Opens → Closes</th>
+                    <th>Duration</th>
+                    <th>Window</th>
+                    <th>Your Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for exam in exams %}
+                <tr>
+                    <td>{{ exam.module.code }} — {{ exam.module.name }}</td>
+                    <td>{{ exam.title }}</td>
+                    <td>
+                        {% if exam.opens_at %}{{ exam.opens_at }}{% else %}—{% endif %} →
+                        {% if exam.closes_at %}{{ exam.closes_at }}{% else %}—{% endif %}
+                    </td>
+                    <td>{{ exam.duration_minutes }} min</td>
+                    <td>
+                        {% if exam.is_open_now %}
+                            <span class="pill pill-open">Open</span>
+                        {% else %}
+                            <span class="pill pill-closed">Closed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if exam.status == "Completed" %}
+                            <span class="pill pill-closed">Completed</span>
+                        {% elif exam.status == "In Progress" %}
+                            <span class="pill pill-progress">In Progress</span>
+                        {% else %}
+                            <span class="pill">Not Started</span>
+                        {% endif %}
+                    </td>
+                    <td class="actions">
+                        {% if exam.status == "Completed" %}
+                            <a href="{% url 'exam_result' exam.id %}">View Result</a>
+                        {% elif exam.status == "In Progress" %}
+                            <a href="{% url 'take_exam_start' exam.id %}">Resume</a>
+                        {% elif exam.is_open_now %}
+                            <a href="{% url 'take_exam_start' exam.id %}">Start Exam</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>You are not enrolled in any modules yet.</p>
+        {% endif %}
+    </section>
+</body>
+</html>

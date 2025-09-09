@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ exam.title }} — Results</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:20px; }
+    h1 { font-size: 20px; margin: 0; }
+    nav a { text-decoration:none; margin-left:10px; color:#0d6efd; }
+    nav a:hover { text-decoration:underline; }
+
+    .summary { margin: 12px 0 16px; padding: 12px; background:#f7f7f7; border-radius:8px; }
+    .summary strong { font-weight:600; }
+
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background:#f7f7f7; text-align:left; white-space: nowrap; }
+    .status { font-weight:600; }
+    .ok { color: #0f5132; }
+    .warn { color: #664d03; }
+    .muted { color:#666; }
+    .actions a { text-decoration:none; color:#0d6efd; }
+    .actions a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  {% include "partials/staff_header.html" %}
+
+  <h2>{{ exam.title }} — Results</h2>
+
+  <p class="muted">
+    <a href="{% url 'staff_results_overview' %}">📊 Results Overview</a> |
+    <a href="{% url 'staff_exam_question_stats' exam.id %}">❓ Per-Question Stats</a> |
+    <a href="{% url 'staff_exam_results_export_csv' exam.id %}">⬇️ Export CSV</a>
+  </p>
+
+  <div class="summary">
+    <div><strong>Total attempts:</strong> {{ total }}</div>
+    <div><strong>Completed:</strong> {{ completed }}</div>
+    <div><strong>Average score (completed):</strong> {% if avg_score %}{{ avg_score }}%{% else %}—{% endif %}</div>
+  </div>
+
+  {% if attempts %}
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Status</th>
+          <th>Score</th>
+          <th>Started</th>
+          <th>Submitted</th>
+          <th>Time Taken</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in attempts %}
+        <tr>
+          <td>{{ a.username }}</td>
+          <td class="status">
+            {% if a.status == 'Completed' %}
+              <span class="ok">Completed</span>
+            {% else %}
+              <span class="warn">In Progress</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if a.score is not None %}{{ a.score }}%{% else %}—{% endif %}
+          </td>
+          <td>{{ a.started_at }}</td>
+          <td>{% if a.submitted_at %}{{ a.submitted_at }}{% else %}—{% endif %}</td>
+          <td>{% if a.time_taken %}{{ a.time_taken }}{% else %}—{% endif %}</td>
+          <td class="actions">
+            {% if a.status == 'Completed' %}
+              <a href="{% url 'staff_attempt_detail' exam.id a.id %}">View</a>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No attempts yet.</p>
+  {% endif %}
+</body>
+</html>

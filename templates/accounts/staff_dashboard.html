@@ -1,9 +1,110 @@
-<h2>Welcome, Staff!</h2>
-<p>You are logged in as a staff.</p>
-<ul>
-    <li><a href="{% url 'exam_list' %}">View My Exams</a></li>
-    <li><a href="{% url 'create_exam' %}">Create New Exam</a></li>
-    <li><a href="{% url 'add_question' %}">Add New Question</a></li>
-    <li><a href="{% url 'question_list' %}">Question Bank</a></li>
-    <li><a href="{% url 'logout' %}">Logout</a></li>
-</ul>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>CSSS – Staff Dashboard</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; }
+    h1 { font-size: 22px; margin: 0; }
+    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background: #f7f7f7; text-align: left; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #ddd; }
+    .pill-open   { background:#e8f6ef; color:#0f5132; border-color:#badbcc; }
+    .pill-closed { background:#fdecea; color:#842029; border-color:#f5c2c7; }
+    .topbar a { margin-right: 10px; text-decoration:none; }
+    .btn { padding:6px 12px; border-radius:6px; text-decoration:none; background:#0d6efd; color:#fff; }
+    .btn:hover { background:#0b5ed7; }
+    .muted { color:#666; }
+
+    /* 🔔 Messages styling */
+    ul.messages { list-style: none; padding: 0; margin: 0 0 15px 0; }
+    ul.messages li { padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; }
+    ul.messages li.error { background: #fdecea; color: #842029; border: 1px solid #f5c2c7; }
+    ul.messages li.success { background: #e8f6ef; color: #0f5132; border: 1px solid #badbcc; }
+    ul.messages li.info { background: #e7f1ff; color: #084298; border: 1px solid #b6d4fe; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Computer Science Success School (CSSS)</h1>
+    <nav><a href="{% url 'logout' %}">Logout</a></nav>
+  </header>
+
+  <!-- 🔔 Messages block -->
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+          {{ message }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <section>
+    <h2>Staff Dashboard</h2>
+    <p><strong>Name:</strong> {{ teacher.get_full_name|default:teacher.username }}</p>
+    <p><strong>Email:</strong> {{ teacher.email }}</p>
+    <p><strong>Module:</strong> 
+      {% if module %}{{ module.code }} — {{ module.name }}{% else %}
+      <span class="muted">Not assigned</span>
+      {% endif %}
+    </p>
+
+    <div class="topbar" style="margin: 12px 0;">
+      <a class="btn" href="{% url 'create_exam' %}">➕ Create New Exam</a>
+      <a href="{% url 'staff_results_overview' %}">📊 Results Overview</a>
+    </div>
+  </section>
+
+  <section>
+    <h3>Exams for {% if module %}{{ module.code }} — {{ module.name }}{% else %}—{% endif %}</h3>
+    {% if exams %}
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Opens → Closes</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Analytics</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exam in exams %}
+          <tr>
+            <td>{{ exam.title }}</td>
+            <td>
+              {% if exam.opens_at %}{{ exam.opens_at }}{% else %}—{% endif %} →
+              {% if exam.closes_at %}{{ exam.closes_at }}{% else %}—{% endif %}
+            </td>
+            <td>{{ exam.duration_minutes }} min</td>
+            <td>
+              {% if not exam.is_active %}
+                <span class="pill">Inactive</span>
+              {% else %}
+                {% if exam.is_open_now %}
+                  <span class="pill pill-open">Open now</span>
+                {% else %}
+                  <span class="pill pill-closed">Closed / Not yet open</span>
+                {% endif %}
+              {% endif %}
+            </td>
+            <td>{{ exam.created_at }}</td>
+            <td>
+              <a href="{% url 'staff_exam_results' exam.id %}">Results</a> |
+              <a href="{% url 'staff_exam_question_stats' exam.id %}">Questions</a> |
+              <a href="{% url 'staff_exam_results_export_csv' exam.id %}">Export CSV</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No exams yet. Create your first exam with the button above.</p>
+    {% endif %}
+  </section>
+</body>
+</html>

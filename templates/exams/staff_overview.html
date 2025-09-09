@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>My Exams — Overview</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:20px; }
+    h1 { font-size: 20px; margin: 0; }
+    nav a { text-decoration:none; margin-left:10px; color:#0d6efd; }
+    nav a:hover { text-decoration:underline; }
+    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background:#f7f7f7; text-align:left; }
+    .muted { color:#666; }
+    .actions a { text-decoration:none; color:#0d6efd; }
+    .actions a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  {% include "partials/staff_header.html" %}
+
+  <h2>My Exams — Overview</h2>
+
+  {% if overview %}
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Open → Close</th>
+        <th>Duration</th>
+        <th>Attempts</th>
+        <th>Completed</th>
+        <th>Completion %</th>
+        <th>Avg Score</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in overview %}
+      <tr>
+        <td>{{ e.title }}</td>
+        <td>
+          {% if e.opens_at %}{{ e.opens_at }}{% else %}—{% endif %} →
+          {% if e.closes_at %}{{ e.closes_at }}{% else %}—{% endif %}
+        </td>
+        <td>{{ e.duration_minutes }} min</td>
+        <td>{{ e.attempts_total }}</td>
+        <td>{{ e.attempts_completed }}</td>
+        <td>{% if e.completion_pct is not None %}{{ e.completion_pct }}%{% else %}—{% endif %}</td>
+        <td>{% if e.avg_score is not None %}{{ e.avg_score }}%{% else %}—{% endif %}</td>
+        <td class="actions">
+          <a href="{% url 'staff_exam_results' e.id %}">Results</a> |
+          <a href="{% url 'staff_exam_question_stats' e.id %}">Questions</a> |
+          <a href="{% url 'staff_exam_results_export_csv' e.id %}">Export CSV</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="muted">No exams available yet.</p>
+  {% endif %}
+</body>
+</html>
