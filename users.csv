@@ -1,7 +1,0 @@
-username,email,first_name,last_name,role,module_code,modules,password
-alice,alice@example.com,Alice,Nguyen,staff,MOD001,,Secret123
-john,john@example.com,John,Smith,staff,MOD002,,Secret123
-bob,bob@example.com,Bob,Khan,student,,MOD003,Password1
-maria,maria@example.com,Maria,Diaz,student,,MOD001,MOD004,Password1
-li,li@example.com,Li,Wang,student,,MOD002,MOD004,Password1
-sara,sara@example.com,Sara,Ali,student,,MOD001,MOD002,MOD003,Password1

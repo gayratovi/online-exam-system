@@ -1,19 +1,3 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
@@ -23,8 +7,19 @@ def home_redirect(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Accounts (login/register/logout)
     path('accounts/', include('accounts.urls')),
-    path('', include('accounts.urls')),  # Optional: redirect home to login/register
+
+    # Staff-facing
+    path('staff/', include('exams.urls_staff')),
+
+    # Student-facing
+    path('student/', include('exams.urls_student')),
+
+    # Questions (if needed separately)
     path('questions/', include('questions.urls')),
-    path('exams/', include('exams.urls')),
+
+    # Root → login
+    path('', home_redirect),
 ]
