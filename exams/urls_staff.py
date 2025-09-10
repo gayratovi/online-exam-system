@@ -5,6 +5,10 @@ urlpatterns = [
     # Staff exam creation
     path('exams/create/', views.create_exam_view, name='create_exam'),
 
+    # Manage questions for an exam
+    path('exams/<int:exam_id>/manage-questions/', views.staff_exam_questions_manage_view, name='staff_exam_questions_manage'),
+    path('exams/<int:exam_id>/questions/<int:question_id>/delete/', views.staff_exam_question_delete_view, name='staff_exam_question_delete'),
+
     # Staff analytics/results
     path('results/overview/', views.staff_results_overview_view, name='staff_results_overview'),
     path('exams/<int:exam_id>/', views.staff_exam_results_view, name='staff_exam_results'),

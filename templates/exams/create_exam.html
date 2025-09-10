@@ -1,18 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Create Exam</title>
+  <title>Create Exam</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; }
+    form { max-width: 600px; margin: auto; }
+    fieldset { border:1px solid #ddd; padding:16px; border-radius:8px; margin-bottom:20px; }
+    legend { font-weight:bold; }
+    label { display:block; margin-top:10px; font-size:14px; }
+    input, textarea, select { width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px; }
+    .btn { padding:10px 20px; border:none; border-radius:6px; background:#0d6efd; color:white; cursor:pointer; }
+    .btn:hover { background:#0b5ed7; }
+    .muted { color:#666; font-size: 14px; }
+  </style>
 </head>
 <body>
-    {% include "partials/staff_header.html" %}
-    <h2>Create New Exam</h2>
+  {% include "partials/staff_header.html" %}
 
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create Exam</button>
-    </form>
+  <h2>Create New Exam</h2>
 
-    <p><a href="{% url 'logout' %}">Logout</a></p>
+  <form method="POST">
+    {% csrf_token %}
+
+    <fieldset>
+      <legend>Exam Info</legend>
+      <label for="id_title">Title</label>
+      {{ form.title }}
+      
+      <label for="id_description">Description</label>
+      {{ form.description }}
+    </fieldset>
+
+    <fieldset>
+      <legend>Schedule</legend>
+      <label for="id_opens_at">Opens At</label>
+      {{ form.opens_at }}
+
+      <label for="id_closes_at">Closes At</label>
+      {{ form.closes_at }}
+
+      <label for="id_duration_minutes">Duration (minutes)</label>
+      {{ form.duration_minutes }}
+    </fieldset>
+
+    <button type="submit" class="btn">Create Exam</button>
+    <p class="muted">After creating the exam, you’ll be redirected to add questions.</p>
+  </form>
+
+  <p><a href="{% url 'staff_dashboard' %}">← Back to Dashboard</a></p>
 </body>
 </html>

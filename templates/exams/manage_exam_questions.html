@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Manage Questions – {{ exam.title }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; }
+    form { max-width: 760px; }
+    fieldset { border:1px solid #ddd; padding:16px; border-radius:8px; margin-bottom:20px; }
+    legend { font-weight:bold; }
+    label { display:block; margin-top:10px; font-size:14px; }
+    input, textarea, select { width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px; }
+    .btn { padding:8px 14px; border:none; border-radius:6px; background:#0d6efd; color:white; cursor:pointer; text-decoration:none; }
+    .btn:hover { background:#0b5ed7; }
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background: #f7f7f7; text-align: left; }
+    .muted { color:#666; }
+    .danger { color:#842029; }
+  </style>
+</head>
+<body>
+  {% include "partials/staff_header.html" %}
+
+  <h2>Manage Questions for: <em>{{ exam.title }}</em></h2>
+  <p class="muted">{{ exam.module.code }} — {{ exam.module.name }}</p>
+
+  <!-- Add Question Inline -->
+  <form method="post">
+    {% csrf_token %}
+    <fieldset>
+      <legend>Add a New Question</legend>
+
+      <label>Question Text</label>
+      {{ q_form.question_text }}
+
+      <label>Question Type</label>
+      {{ q_form.question_type }}
+
+      <div id="mcq-block">
+        <label>Option A</label> {{ q_form.option_a }}
+        <label>Option B</label> {{ q_form.option_b }}
+        <label>Option C</label> {{ q_form.option_c }}
+        <label>Option D</label> {{ q_form.option_d }}
+        <small class="muted">For MCQ, set Correct Answer to one of: a, b, c, or d.</small>
+      </div>
+
+      <label>Correct Answer</label>
+      {{ q_form.correct_answer }}
+
+      <div style="margin-top:12px;">
+        <button type="submit" class="btn">Add Question</button>
+        <a class="btn" href="{% url 'staff_dashboard' %}" style="background:#6c757d; margin-left:8px;">Back</a>
+      </div>
+    </fieldset>
+  </form>
+
+  <!-- Existing Questions -->
+  <h3>Questions in this Exam</h3>
+  {% if linked %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Type</th>
+          <th>Question</th>
+          <th>MCQ Options</th>
+          <th>Correct</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for link in linked %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ link.question.get_question_type_display }}</td>
+            <td>{{ link.question.question_text }}</td>
+            <td>
+              {% if link.question.question_type == 'MCQ' %}
+                A) {{ link.question.option_a }}<br>
+                B) {{ link.question.option_b }}<br>
+                C) {{ link.question.option_c }}<br>
+                D) {{ link.question.option_d }}
+              {% else %} — {% endif %}
+            </td>
+            <td>{{ link.question.correct_answer }}</td>
+            <td>
+              <a class="danger" href="{% url 'staff_exam_question_delete' exam.id link.question.id %}"
+                 onclick="return confirm('Remove this question from the exam?');">Remove</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No questions yet — add your first question above.</p>
+  {% endif %}
+
+  <script>
+    // Optional tiny UX: hide MCQ options unless type == MCQ
+    const typeSel = document.getElementById('id_question_type');
+    const mcqBlock = document.getElementById('mcq-block');
+    function toggleMCQ() {
+      if (!typeSel || !mcqBlock) return;
+      mcqBlock.style.display = (typeSel.value === 'MCQ') ? 'block' : 'none';
+    }
+    toggleMCQ();
+    if (typeSel) typeSel.addEventListener('change', toggleMCQ);
+  </script>
+</body>
+</html>

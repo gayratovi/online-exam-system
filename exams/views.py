@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from .forms import ExamCreationForm
+from .forms import ExamCreationForm, NewQuestionForExamForm
 from .models import Exam, ExamQuestion, StudentExamAttempt, StudentAnswer
 from questions.models import Question
 from django.db.models import Count, Avg, Q, F, ExpressionWrapper, DurationField
@@ -17,18 +17,73 @@ def create_exam_view(request):
         return redirect('login')
 
     if request.method == 'POST':
-        form = ExamCreationForm(request.POST, user=request.user)
+        form = ExamCreationForm(request.POST)
         if form.is_valid():
             exam = form.save(commit=False)
-            exam.module = request.user.module
+            exam.module = request.user.module  # lock to teacher's module
+            exam.is_active = True
             exam.save()
-            for question in form.cleaned_data['questions']:
-                ExamQuestion.objects.create(exam=exam, question=question)
-            return redirect('staff_dashboard')
+            messages.success(request, "Exam created. Now add questions.")
+            return redirect('staff_exam_questions_manage', exam_id=exam.id)
     else:
-        form = ExamCreationForm(user=request.user)
+        form = ExamCreationForm()
 
     return render(request, 'exams/create_exam.html', {'form': form})
+
+
+@login_required
+def staff_exam_questions_manage_view(request, exam_id):
+    """Step 2: after creating an exam, add questions inline."""
+    if request.user.role != 'staff':
+        return redirect('login')
+
+    exam = get_object_or_404(Exam, pk=exam_id)
+    if exam.module != request.user.module:
+        messages.error(request, "You can only manage exams in your module.")
+        return redirect('staff_dashboard')
+
+    # Process "add question" form
+    if request.method == "POST":
+        q_form = NewQuestionForExamForm(request.POST)
+        if q_form.is_valid():
+            # Create Question in exam's module
+            q = q_form.save(commit=False)
+            q.module = exam.module
+            q.save()
+            ExamQuestion.objects.get_or_create(exam=exam, question=q)
+            messages.success(request, "Question added to the exam.")
+            return redirect('staff_exam_questions_manage', exam_id=exam.id)
+    else:
+        q_form = NewQuestionForExamForm()
+
+    # Existing questions in this exam
+    linked = (ExamQuestion.objects
+              .filter(exam=exam)
+              .select_related('question')
+              .order_by('question__id'))
+
+    return render(request, 'exams/manage_exam_questions.html', {
+        'exam': exam,
+        'q_form': q_form,
+        'linked': linked,
+    })
+
+
+@login_required
+def staff_exam_question_delete_view(request, exam_id, question_id):
+    """Remove a question from an exam (does not delete the Question object globally)."""
+    if request.user.role != 'staff':
+        return redirect('login')
+
+    exam = get_object_or_404(Exam, pk=exam_id)
+    if exam.module != request.user.module:
+        messages.error(request, "You can only manage exams in your module.")
+        return redirect('staff_dashboard')
+
+    eq = get_object_or_404(ExamQuestion, exam=exam, question_id=question_id)
+    eq.delete()
+    messages.success(request, "Question removed from the exam.")
+    return redirect('staff_exam_questions_manage', exam_id=exam.id)
 
 # ---------- STAFF ANALYTICS ----------
 
