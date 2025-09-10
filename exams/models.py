@@ -42,6 +42,9 @@ class StudentExamAttempt(models.Model):
     ends_at = models.DateTimeField(null=True, blank=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
 
+    # 🔹 New field to store randomized question order
+    question_order = models.JSONField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.student.username} - {self.exam.title}"
 

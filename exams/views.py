@@ -329,6 +329,8 @@ def staff_exam_results_export_csv(request, exam_id):
 
 # ---------- STUDENT VIEWS ----------
 
+import random
+
 @login_required
 def take_exam_start_view(request, exam_id):
     if request.user.role != 'student':
@@ -358,6 +360,12 @@ def take_exam_start_view(request, exam_id):
     if created or not attempt.ends_at:
         attempt.started_at = timezone.now()
         attempt.ends_at = attempt.started_at + timedelta(minutes=exam.duration_minutes)
+
+        # assign random question order once per attempt
+        q_ids = list(Question.objects.filter(examquestion__exam=exam).values_list("id", flat=True))
+        random.shuffle(q_ids)
+        attempt.question_order = q_ids
+
         attempt.save()
 
     # if time already over, submit immediately
@@ -365,7 +373,7 @@ def take_exam_start_view(request, exam_id):
         return redirect('submit_exam', exam_id=exam.id)
 
     # jump to first unanswered
-    questions = list(Question.objects.filter(examquestion__exam=exam).order_by('id'))
+    questions = attempt.question_order or []
     if not questions:
         return redirect('student_dashboard')
 
@@ -373,8 +381,8 @@ def take_exam_start_view(request, exam_id):
         StudentAnswer.objects.filter(attempt=attempt).values_list('question_id', flat=True)
     )
     first_index = 0
-    for i, q in enumerate(questions):
-        if q.id not in answered_ids:
+    for i, qid in enumerate(questions):
+        if qid not in answered_ids:
             first_index = i
             break
 
@@ -416,15 +424,17 @@ def take_exam_question_view(request, exam_id, question_index: int):
     if not exam.is_open_now() or attempt.is_time_over():
         return redirect('submit_exam', exam_id=exam.id)
 
-    # all questions for this exam
-    questions = list(Question.objects.filter(examquestion__exam=exam).order_by('id'))
-    total = len(questions)
+    # use stored random question order
+    question_ids = attempt.question_order or []
+    total = len(question_ids)
     if total == 0:
         return redirect('student_dashboard')
     if question_index < 0 or question_index >= total:
         return redirect('take_exam_question', exam_id=exam.id, question_index=0)
 
-    question = questions[question_index]
+    # fetch current question in that order
+    question_id = question_ids[question_index]
+    question = get_object_or_404(Question, id=question_id)
 
     # check if already answered
     prev = StudentAnswer.objects.filter(attempt=attempt, question=question).first()
@@ -441,7 +451,7 @@ def take_exam_question_view(request, exam_id, question_index: int):
             attempt=attempt,
             question=question,
             defaults={
-                'selected_answer': selected_answer,  # stores as-is ("True", "False", "a", "b", etc.)
+                'selected_answer': selected_answer,
                 'is_correct': selected_answer.lower() == question.correct_answer.lower()
             }
         )
@@ -511,13 +521,20 @@ def exam_result_view(request, exam_id):
         completed=True
     )
 
-    answers = (StudentAnswer.objects
-               .filter(attempt=attempt)
-               .select_related('question')
-               .order_by('question__id'))
+    # Fetch all answers
+    answers_qs = (StudentAnswer.objects
+                  .filter(attempt=attempt)
+                  .select_related('question'))
+
+    # If question order was stored, use it; otherwise fallback to ID order
+    if attempt.question_order:
+        answers_map = {a.question.id: a for a in answers_qs}
+        answers = [answers_map[qid] for qid in attempt.question_order if qid in answers_map]
+    else:
+        answers = list(answers_qs.order_by('question__id'))
 
     total = ExamQuestion.objects.filter(exam=exam).count()
-    correct = answers.filter(is_correct=True).count()
+    correct = sum(1 for a in answers if a.is_correct)
 
     return render(request, 'exams/exam_result.html', {
         'exam': exam,
