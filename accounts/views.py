@@ -3,8 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .forms import RegistrationForm, LoginForm
 from django.utils import timezone
-
-# Exams/attempts for dashboards
 from exams.models import Exam, StudentExamAttempt
 
 
