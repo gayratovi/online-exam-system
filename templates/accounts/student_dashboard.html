@@ -1,96 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>CSSS – Student Dashboard</title>
-    <style>
-        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
-        header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; }
-        h1 { font-size: 22px; margin: 0; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-        th { background: #f7f7f7; text-align: left; }
-        .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #ddd; }
-        .pill-open { background:#e8f6ef; color:#0f5132; border-color:#badbcc; }
-        .pill-closed { background:#fdecea; color:#842029; border-color:#f5c2c7; }
-        .pill-progress { background:#fff3cd; color:#664d03; border-color:#ffecb5; }
-        .actions a { padding:4px 10px; background:#0d6efd; color:white; border-radius:4px; text-decoration:none; }
-        .actions a:hover { background:#0b5ed7; }
-        
-         /* 🔔 Messages styling */
-        ul.messages { list-style: none; padding: 0; margin: 0 0 15px 0; }
-        ul.messages li { padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; }
-        ul.messages li.error { background: #fdecea; color: #842029; border: 1px solid #f5c2c7; }
-        ul.messages li.success { background: #e8f6ef; color: #0f5132; border: 1px solid #badbcc; }
-        ul.messages li.info { background: #e7f1ff; color: #084298; border: 1px solid #b6d4fe; }
-    </style>
-</head>
-<body>
-    {% include "partials/student_header.html" %}
-    <section>
-        <h3>Your Modules & Exams</h3>
-        {% if modules %}
-        <table>
-            <thead>
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard | CSSS{% endblock %}
+
+{% block content %}
+  {% include "partials/student_header.html" %}
+
+  <section class="mt-4">
+    <h2 class="mb-3">Your Modules & Exams</h2>
+
+    {% if modules %}
+      {% for module in modules %}
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-dark text-white">
+            <strong>{{ module.code }}</strong> — {{ module.name }}
+          </div>
+
+          <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+              <!-- ✅ Set fixed widths so all tables align -->
+              <colgroup>
+                <col style="width: 36%"> <!-- Exam -->
+                <col style="width: 15%"> <!-- Opens -->
+                <col style="width: 15%"> <!-- Closes -->
+                <col style="width: 13%"> <!-- Window -->
+                <col style="width: 13%"> <!-- Status -->
+                <col style="width: 8%"> <!-- Action -->
+              </colgroup>
+
+              <thead class="table-light">
                 <tr>
-                    <th>Module</th>
-                    <th>Exam</th>
-                    <th>Opens → Closes</th>
-                    <th>Duration</th>
-                    <th>Window</th>
-                    <th>Your Status</th>
-                    <th>Action</th>
+                  <th>Exam</th>
+                  <th>Opens</th>
+                  <th>Closes</th>
+                  <th>Window</th>
+                  <th>Your Status</th>
+                  <th>Action</th>
                 </tr>
-            </thead>
-            <tbody>
-            {% for exam in exams %}
-                <tr>
-                    <td>{{ exam.module.code }} — {{ exam.module.name }}</td>
-                    <td>{{ exam.title }}</td>
-                    <td>
-                        {% if exam.opens_at %}{{ exam.opens_at }}{% else %}—{% endif %} →
-                        {% if exam.closes_at %}{{ exam.closes_at }}{% else %}—{% endif %}
-                    </td>
-                    <td>{{ exam.duration_minutes }} min</td>
-                    <td>
-                      {% if exam.is_open_now %}
-                        <span class="pill pill-open">Open now</span>
-                      {% else %}
-                        {% if exam.opens_at and exam.opens_at > now %}
-                          <span class="pill pill-closed">Not yet open</span>
+              </thead>
+              <tbody>
+                {% for exam in exams %}
+                  {% if exam.module.id == module.id %}
+                    <tr>
+                      <td class="fw-semibold">{{ exam.title }}</td>
+                      <td>
+                        {% if exam.opens_at %}
+                          {{ exam.opens_at|date:"M d, Y H:i" }}
+                        {% else %}—{% endif %}
+                      </td>
+                      <td>
+                        {% if exam.closes_at %}
+                          {{ exam.closes_at|date:"M d, Y H:i" }}
+                        {% else %}—{% endif %}
+                      </td>
+                      <td>
+                        {% if exam.is_open_now %}
+                          <span class="badge status-badge bg-success">Open now</span>
+                        {% elif exam.opens_at and exam.opens_at > now %}
+                          <span class="badge status-badge bg-secondary">Not yet open</span>
                         {% else %}
-                          <span class="pill pill-closed">Closed</span>
+                          <span class="badge status-badge bg-danger">Closed</span>
                         {% endif %}
-                      {% endif %}
-                    </td>
-                    <td>
+                      </td>
+                      <td>
                         {% if exam.status == "Completed" %}
-                            <span class="pill pill-closed">Completed</span>
+                          <span class="badge status-badge bg-primary">Completed</span>
                         {% elif exam.status == "In Progress" %}
-                            <span class="pill pill-progress">In Progress</span>
+                          <span class="badge status-badge bg-warning text-dark">In Progress</span>
                         {% elif exam.status == "Missed" %}
-                            <span class="pill pill-closed">Missed</span>
+                          <span class="badge status-badge bg-danger">Missed</span>
                         {% else %}
-                            <span class="pill">Not Started</span>
+                          <span class="badge status-badge bg-secondary">Not Started</span>
                         {% endif %}
-                    </td>
-                    <td class="actions">
+                      </td>
+                      <td>
                         {% if exam.status == "Completed" %}
-                            <a href="{% url 'exam_result' exam.id %}">View Result</a>
+                          <a href="{% url 'exam_result' exam.id %}" class="btn btn-outline-primary btn-sm action-btn">Result</a>
                         {% elif exam.status == "In Progress" %}
-                            <a href="{% url 'take_exam_start' exam.id %}">Resume</a>
+                          <a href="{% url 'take_exam_start' exam.id %}" class="btn btn-warning btn-sm action-btn">Resume</a>
                         {% elif exam.is_open_now %}
-                            <a href="{% url 'exam_instructions' exam.id %}">Start Exam</a>
+                          <a href="{% url 'exam_instructions' exam.id %}" class="btn btn-success btn-sm action-btn">Start</a>
                         {% else %}
-                            —
+                          <span class="text-muted">—</span>
                         {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-            <p>You are not enrolled in any modules yet.</p>
-        {% endif %}
-    </section>
-</body>
-</html>
+                      </td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="alert alert-info">
+        You are not enrolled in any modules yet.
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}
