@@ -1,35 +1,37 @@
-<header>
-  <h1>Computer Science Success School (CSSS)</h1>
-  <nav>
-    <a href="{% url 'student_dashboard' %}">← Dashboard</a>
-    <a href="{% url 'password_change' %}">🔑 Change Password</a>
-    <a href="{% url 'logout' %}">🚪 Logout</a>
-  </nav>
+<header class="mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 m-0">Computer Science Success School (CSSS)</h1>
+    <nav>
+      <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary btn-sm me-2">← Dashboard</a>
+      <a href="{% url 'password_change' %}" class="btn btn-outline-warning btn-sm me-2">🔑 Change Password</a>
+      <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">🚪 Logout</a>
+    </nav>
+  </div>
+
+  <!-- 🔔 Messages block -->
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <section class="card p-3">
+    <h2 class="h5 mb-3">Student Information</h2>
+    <p><strong>Name:</strong> {{ request.user.get_full_name|default:request.user.username }}</p>
+    <p><strong>Student ID:</strong> {{ request.user.username }}</p>
+    <p><strong>Email:</strong> {{ request.user.email }}</p>
+    <p><strong>Modules:</strong>
+      {% with request.user.modules.all as mods %}
+        {% if mods %}
+          {% for m in mods %}
+            <span class="badge bg-secondary me-1">{{ m.code }} — {{ m.name }}</span>
+          {% endfor %}
+        {% else %}
+          <span class="text-muted">No modules enrolled</span>
+        {% endif %}
+      {% endwith %}
+    </p>
+  </section>
 </header>
-
-<!-- 🔔 Messages block -->
-{% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-        {{ message }}
-      </li>
-    {% endfor %}
-  </ul>
-{% endif %}
-
-<section style="margin-top: 15px;">
-  <h2>Student Information</h2>
-  <p><strong>Name:</strong> {{ request.user.get_full_name|default:request.user.username }}</p>
-  <p><strong>Student ID:</strong> {{ request.user.username }}</p>
-  <p><strong>Email:</strong> {{ request.user.email }}</p>
-  <p><strong>Modules:</strong>
-    {% with request.user.modules.all as mods %}
-      {% if mods %}
-        {{ mods|join:", " }}
-      {% else %}
-        <span class="muted">No modules enrolled</span>
-      {% endif %}
-    {% endwith %}
-  </p>
-</section>
