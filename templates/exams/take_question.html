@@ -1,71 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>{{ exam.title }} – Question {{ question_index|add:1 }}</title>
-    <style>
-        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
-        a.backlink { display:inline-block; margin-bottom: 12px; text-decoration:none; color:#0d6efd; }
-        a.backlink:hover { text-decoration:underline; }
-    </style>
-</head>
-<body>
-    <a href="{% url 'student_dashboard' %}" class="backlink">← Back to Dashboard</a>
+{% extends "base.html" %}
+
+{% block title %}{{ exam.title }} – Question {{ question_index|add:1 }} | CSSS{% endblock %}
+
+{% block content %}
+  <section class="mt-4">
+    <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary btn-sm mb-3">← Back to Dashboard</a>
 
     <h3>{{ exam.title }}</h3>
-    <p>Question {{ question_index|add:1 }} of {{ total_questions }}</p>
+    <p class="text-muted">Question {{ question_index|add:1 }} of {{ total_questions }}</p>
 
-    <!-- Countdown (shows only if provided) -->
+    <!-- Countdown -->
     {% if remaining_seconds %}
-      <div id="countdown" data-remaining="{{ remaining_seconds }}" style="margin:8px 0;font-weight:600;">
+      <div id="countdown" data-remaining="{{ remaining_seconds }}" class="alert alert-info fw-semibold">
         Time left: …
       </div>
     {% endif %}
 
-    <form method="post">
+    <!-- Question form -->
+    <form method="post" class="mt-3">
       {% csrf_token %}
-      <p>{{ question.question_text }}</p>
 
-      {% if question.question_type == 'MCQ' %}
-          <label><input type="radio" name="answer" value="a" {% if prefill == 'a' %}checked{% endif %}> {{ question.option_a }}</label><br>
-          <label><input type="radio" name="answer" value="b" {% if prefill == 'b' %}checked{% endif %}> {{ question.option_b }}</label><br>
-          <label><input type="radio" name="answer" value="c" {% if prefill == 'c' %}checked{% endif %}> {{ question.option_c }}</label><br>
-          <label><input type="radio" name="answer" value="d" {% if prefill == 'd' %}checked{% endif %}> {{ question.option_d }}</label><br>
-      {% elif question.question_type == 'TF' %}
-          <label><input type="radio" name="answer" value="True"  {% if prefill|lower == 'true' %}checked{% endif %}> True</label><br>
-          <label><input type="radio" name="answer" value="False" {% if prefill|lower == 'false' %}checked{% endif %}> False</label><br>
-      {% else %}
-          <input type="text" name="answer" value="{{ prefill }}" style="width: 320px;">
-      {% endif %}
+      <div class="mb-3">
+        <p class="fw-semibold">{{ question.question_text }}</p>
 
-      <div style="margin-top:12px;">
-        {% if has_prev %}<button name="prev">Previous</button>{% endif %}
-        {% if has_next %}<button name="next">Save & Next</button>{% else %}
-        <button name="submit">Finish & Submit</button>{% endif %}
+        {% if question.question_type == 'MCQ' %}
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="answer" value="a" {% if prefill == 'a' %}checked{% endif %}>
+            <label class="form-check-label">A) {{ question.option_a }}</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="answer" value="b" {% if prefill == 'b' %}checked{% endif %}>
+            <label class="form-check-label">B) {{ question.option_b }}</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="answer" value="c" {% if prefill == 'c' %}checked{% endif %}>
+            <label class="form-check-label">C) {{ question.option_c }}</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="answer" value="d" {% if prefill == 'd' %}checked{% endif %}>
+            <label class="form-check-label">D) {{ question.option_d }}</label>
+          </div>
+
+        {% elif question.question_type == 'TF' %}
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="answer" value="True" {% if prefill|lower == 'true' %}checked{% endif %}>
+            <label class="form-check-label">True</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="answer" value="False" {% if prefill|lower == 'false' %}checked{% endif %}>
+            <label class="form-check-label">False</label>
+          </div>
+
+        {% else %}
+          <input type="text" name="answer" value="{{ prefill }}" class="form-control w-50" placeholder="Type your answer">
+        {% endif %}
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="mt-3">
+        {% if has_prev %}
+          <button name="prev" class="btn btn-outline-secondary">Previous</button>
+        {% endif %}
+        {% if has_next %}
+          <button name="next" class="btn btn-primary">Save & Next</button>
+        {% else %}
+          <button name="submit" class="btn btn-success">Finish & Submit</button>
+        {% endif %}
       </div>
     </form>
+  </section>
 
-    {% if remaining_seconds %}
-    <script>
-    (function () {
-      const el = document.getElementById('countdown');
-      let sec = parseInt(el.dataset.remaining || "0", 10);
-      function fmt(s){const m=Math.floor(s/60), r=s%60; return m+":"+(r<10?"0"+r:r);}
-      function tick(){
-        if (sec <= 0) {
-          // Auto-submit: add a hidden 'submit' field and submit the form
-          const f = document.forms[0];
-          const h = document.createElement('input');
-          h.type = 'hidden'; h.name = 'submit'; h.value = '1';
-          f.appendChild(h); f.submit();
-          return;
-        }
-        el.textContent = "Time left: " + fmt(sec);
-        sec -= 1;
-        setTimeout(tick, 1000);
+  <!-- Countdown script -->
+  {% if remaining_seconds %}
+  <script>
+  (function () {
+    const el = document.getElementById('countdown');
+    let sec = parseInt(el.dataset.remaining || "0", 10);
+    function fmt(s){const m=Math.floor(s/60), r=s%60; return m+":"+(r<10?"0"+r:r);}
+    function tick(){
+      if (sec <= 0) {
+        const f = document.forms[0];
+        const h = document.createElement('input');
+        h.type = 'hidden'; h.name = 'submit'; h.value = '1';
+        f.appendChild(h); f.submit();
+        return;
       }
-      tick();
-    })();
-    </script>
-    {% endif %}
-</body>
-</html>
+      el.textContent = "Time left: " + fmt(sec);
+      sec -= 1;
+      setTimeout(tick, 1000);
+    }
+    tick();
+  })();
+  </script>
+  {% endif %}
+{% endblock %}
