@@ -405,17 +405,18 @@ def take_exam_question_view(request, exam_id, question_index: int):
     if not request.user.modules.filter(pk=exam.module_id).exists():
         return redirect('student_dashboard')
 
+    # get ongoing attempt
     attempt = StudentExamAttempt.objects.filter(
         student=request.user, exam=exam, completed=False
     ).first()
     if not attempt:
-        # no ongoing attempt → start flow
         return redirect('take_exam_start', exam_id=exam.id)
 
     # hard gates: exam window & time budget
     if not exam.is_open_now() or attempt.is_time_over():
         return redirect('submit_exam', exam_id=exam.id)
 
+    # all questions for this exam
     questions = list(Question.objects.filter(examquestion__exam=exam).order_by('id'))
     total = len(questions)
     if total == 0:
@@ -425,21 +426,22 @@ def take_exam_question_view(request, exam_id, question_index: int):
 
     question = questions[question_index]
 
+    # check if already answered
     prev = StudentAnswer.objects.filter(attempt=attempt, question=question).first()
     prefill = prev.selected_answer if prev else ""
 
     if request.method == 'POST':
-        # If time ran out between render and POST, submit
         if attempt.is_time_over():
             return redirect('submit_exam', exam_id=exam.id)
 
         selected_answer = (request.POST.get('answer') or "").strip()
 
+        # save/update answer
         StudentAnswer.objects.update_or_create(
             attempt=attempt,
             question=question,
             defaults={
-                'selected_answer': selected_answer,
+                'selected_answer': selected_answer,  # stores as-is ("True", "False", "a", "b", etc.)
                 'is_correct': selected_answer.lower() == question.correct_answer.lower()
             }
         )

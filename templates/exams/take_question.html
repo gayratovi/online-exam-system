@@ -25,16 +25,16 @@
       {% csrf_token %}
       <p>{{ question.question_text }}</p>
 
-      {% if question.question_type == 'mcq' %}
-        <label><input type="radio" name="answer" value="a" {% if prefill == 'a' %}checked{% endif %}> {{ question.option_a }}</label><br>
-        <label><input type="radio" name="answer" value="b" {% if prefill == 'b' %}checked{% endif %}> {{ question.option_b }}</label><br>
-        <label><input type="radio" name="answer" value="c" {% if prefill == 'c' %}checked{% endif %}> {{ question.option_c }}</label><br>
-        <label><input type="radio" name="answer" value="d" {% if prefill == 'd' %}checked{% endif %}> {{ question.option_d }}</label><br>
-      {% elif question.question_type == 'tf' %}
-        <label><input type="radio" name="answer" value="True"  {% if prefill|lower == 'true' %}checked{% endif %}> True</label><br>
-        <label><input type="radio" name="answer" value="False" {% if prefill|lower == 'false' %}checked{% endif %}> False</label><br>
+      {% if question.question_type == 'MCQ' %}
+          <label><input type="radio" name="answer" value="a" {% if prefill == 'a' %}checked{% endif %}> {{ question.option_a }}</label><br>
+          <label><input type="radio" name="answer" value="b" {% if prefill == 'b' %}checked{% endif %}> {{ question.option_b }}</label><br>
+          <label><input type="radio" name="answer" value="c" {% if prefill == 'c' %}checked{% endif %}> {{ question.option_c }}</label><br>
+          <label><input type="radio" name="answer" value="d" {% if prefill == 'd' %}checked{% endif %}> {{ question.option_d }}</label><br>
+      {% elif question.question_type == 'TF' %}
+          <label><input type="radio" name="answer" value="True"  {% if prefill|lower == 'true' %}checked{% endif %}> True</label><br>
+          <label><input type="radio" name="answer" value="False" {% if prefill|lower == 'false' %}checked{% endif %}> False</label><br>
       {% else %}
-        <input type="text" name="answer" value="{{ prefill }}" style="width: 320px;">
+          <input type="text" name="answer" value="{{ prefill }}" style="width: 320px;">
       {% endif %}
 
       <div style="margin-top:12px;">

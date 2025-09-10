@@ -29,31 +29,43 @@
 
   <!-- 🔹 Add Question Form -->
   <form method="post" action="">
-    {% csrf_token %}
-    <fieldset>
-      <legend>Add a New Question</legend>
-      <label>Question Text</label>
-      {{ q_form.question_text }}
-
-      <label>Question Type</label>
-      {{ q_form.question_type }}
-
-      <div id="mcq-block">
-        <label>Option A</label> {{ q_form.option_a }}
-        <label>Option B</label> {{ q_form.option_b }}
-        <label>Option C</label> {{ q_form.option_c }}
-        <label>Option D</label> {{ q_form.option_d }}
-        <small class="muted">For MCQ, set Correct Answer to one of: a, b, c, or d.</small>
+      {% csrf_token %}
+    
+      {% if q_form.non_field_errors %}
+        <div style="color:red; margin-bottom:10px;">
+          {{ q_form.non_field_errors }}
+        </div>
+      {% endif %}
+    
+      <fieldset>
+        <legend>Add a New Question</legend>
+    
+        <label>Question Text</label>
+        {{ q_form.question_text }}
+        {{ q_form.question_text.errors }}
+    
+        <label>Question Type</label>
+        {{ q_form.question_type }}
+        {{ q_form.question_type.errors }}
+    
+        <div id="mcq-block">
+          <label>Option A</label> {{ q_form.option_a }} {{ q_form.option_a.errors }}
+          <label>Option B</label> {{ q_form.option_b }} {{ q_form.option_b.errors }}
+          <label>Option C</label> {{ q_form.option_c }} {{ q_form.option_c.errors }}
+          <label>Option D</label> {{ q_form.option_d }} {{ q_form.option_d.errors }}
+          <small class="muted">For MCQ, Correct Answer must be A, B, C, or D.</small>
+        </div>
+    
+        <label>Correct Answer</label>
+        {{ q_form.correct_answer }}
+        {{ q_form.correct_answer.errors }}
+      </fieldset>
+    
+      <div style="margin-top:12px;">
+        <button type="submit" class="btn btn-primary">➕ Add Question</button>
       </div>
-
-      <label>Correct Answer</label>
-      {{ q_form.correct_answer }}
-    </fieldset>
-
-    <div style="margin-top:12px;">
-      <button type="submit" class="btn btn-primary">➕ Add Question</button>
-    </div>
   </form>
+
 
   <!-- 🔹 Existing Questions -->
   <h3>Questions in this Exam</h3>

@@ -3,6 +3,7 @@ from django.utils import timezone
 from .models import Exam
 from questions.models import Question
 
+
 class ExamCreationForm(forms.ModelForm):
     class Meta:
         model = Exam
@@ -31,7 +32,7 @@ class ExamCreationForm(forms.ModelForm):
 class NewQuestionForExamForm(forms.ModelForm):
     """
     Create a Question inline for an exam.
-    We’ll validate based on question_type:
+    Validation rules:
       - MCQ  -> options A–D required; correct_answer must be one of a/b/c/d
       - TF   -> correct_answer must be True/False
       - FILL -> correct_answer any non-empty string
@@ -48,6 +49,22 @@ class NewQuestionForExamForm(forms.ModelForm):
             "question_text": forms.Textarea(attrs={"rows": 3}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Default: text input
+        self.fields["correct_answer"].widget = forms.TextInput()
+
+        # Switch to dropdown if MCQ is selected
+        data = kwargs.get("data")
+        if data and data.get("question_type") == "MCQ":
+            self.fields["correct_answer"].widget = forms.Select(choices=[
+                ("a", "A"),
+                ("b", "B"),
+                ("c", "C"),
+                ("d", "D"),
+            ])
+
     def clean(self):
         cleaned = super().clean()
         qtype = cleaned.get("question_type")
@@ -61,13 +78,12 @@ class NewQuestionForExamForm(forms.ModelForm):
             if not all([a, b, c, d]):
                 raise forms.ValidationError("MCQ requires all four options A, B, C, and D.")
             if ca.lower() not in ("a", "b", "c", "d"):
-                raise forms.ValidationError("For MCQ, correct answer must be one of: a, b, c, or d.")
-            cleaned["correct_answer"] = ca.lower()  # normalize
+                raise forms.ValidationError("For MCQ, correct answer must be one of: A, B, C, or D.")
+            cleaned["correct_answer"] = ca.lower()
 
         elif qtype == "TF":
             if ca not in ("True", "False"):
                 raise forms.ValidationError("For True/False, correct answer must be 'True' or 'False'.")
-            # nothing else needed
 
         elif qtype == "FILL":
             if not ca:
