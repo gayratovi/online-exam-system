@@ -11,7 +11,7 @@
       <div class="card-body">
         <p><strong>Module:</strong> {{ exam.module.code }} – {{ exam.module.name }}</p>
         <p><strong>Description:</strong> {{ exam.description|default:"No description provided." }}</p>
-        <p><strong>Duration:</strong> {{ exam.duration_minutes }} minutes</p>
+        <p><strong>Exam Duration:</strong> {{ exam.duration_minutes }} minutes</p>
         <p><strong>Opened:</strong> 
           {% if exam.opens_at %}{{ exam.opens_at|date:"M d, Y H:i" }}{% else %}—{% endif %}
         </p>
