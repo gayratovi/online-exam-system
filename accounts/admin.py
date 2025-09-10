@@ -19,6 +19,12 @@ class Staff(CustomUser):
         verbose_name = "Staff"
         verbose_name_plural = "Staff"
 
+class AdminUser(CustomUser):
+    class Meta:
+        proxy = True
+        verbose_name = "Admin"
+        verbose_name_plural = "Admin"
+
 # -------------------------------
 # Inlines
 # -------------------------------
@@ -106,3 +112,24 @@ class ModuleAdmin(admin.ModelAdmin):
     def student_count(self, obj):
         return obj.students.count()
     student_count.short_description = "Students"
+
+@admin.register(AdminUser)
+class AdminUserAdmin(UserAdmin):
+    model = AdminUser
+
+    list_display = ("username", "email", "is_superuser", "is_active", "last_login")
+    list_filter = ("is_active", "is_superuser")
+    search_fields = ("username", "email", "first_name", "last_name")
+    ordering = ("username",)
+
+    readonly_fields = ("role",)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(role="admin")
+
+    def save_model(self, request, obj, form, change):
+        obj.role = "admin"  # enforce role
+        obj.is_staff = True
+        obj.is_superuser = True
+        super().save_model(request, obj, form, change)

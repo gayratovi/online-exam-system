@@ -270,6 +270,21 @@ def take_exam_start_view(request, exam_id):
 
     return redirect('take_exam_question', exam_id=exam.id, question_index=first_index)
 
+@login_required
+def exam_instructions_view(request, exam_id):
+    if request.user.role != "student":
+        return redirect("login")
+
+    exam = get_object_or_404(Exam, pk=exam_id)
+
+    # only allow if exam is open
+    if not exam.is_open_now():
+        messages.error(request, "This exam is not currently open.")
+        return redirect("student_dashboard")
+
+    return render(request, "exams/exam_instructions.html", {
+        "exam": exam,
+    })
 
 @login_required
 def take_exam_question_view(request, exam_id, question_index: int):

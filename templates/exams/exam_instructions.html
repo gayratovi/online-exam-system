@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ exam.title }} – Instructions</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; }
+    .btn { padding: 10px 20px; background:#0d6efd; color:white; border:none; border-radius:6px; text-decoration:none; }
+    .btn:hover { background:#0b5ed7; }
+    .box { border:1px solid #ddd; padding:20px; border-radius:8px; margin-top:20px; }
+  </style>
+</head>
+<body>
+  <h1>{{ exam.title }}</h1>
+  <div class="box">
+    <p><strong>Module:</strong> {{ exam.module.code }} – {{ exam.module.name }}</p>
+    <p><strong>Description:</strong> {{ exam.description|default:"No description provided." }}</p>
+    <p><strong>Duration:</strong> {{ exam.duration_minutes }} minutes</p>
+    <p><strong>Available:</strong> {{ exam.opens_at }} → {{ exam.closes_at }}</p>
+  </div>
+
+  <p>Once you click <strong>Begin Exam</strong>, the timer will start and you cannot pause or reset.</p>
+
+  <a class="btn" href="{% url 'take_exam_start' exam.id %}">Begin Exam</a>
+  <p><a href="{% url 'student_dashboard' %}">← Back to Dashboard</a></p>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <header>
   <h1>Computer Science Success School (CSSS)</h1>
   <nav>
-    <a href="{% url 'staff_dashboard' %}">← Dashboard</a>
+    <a href="{% url 'student_dashboard' %}">← Dashboard</a>
     <a href="{% url 'password_change' %}">🔑 Change Password</a>
     <a href="{% url 'logout' %}">🚪 Logout</a>
   </nav>
@@ -19,14 +19,17 @@
 {% endif %}
 
 <section style="margin-top: 15px;">
-  <h2>Staff Information</h2>
+  <h2>Student Information</h2>
   <p><strong>Name:</strong> {{ request.user.get_full_name|default:request.user.username }}</p>
+  <p><strong>Student ID:</strong> {{ request.user.username }}</p>
   <p><strong>Email:</strong> {{ request.user.email }}</p>
-  <p><strong>Module:</strong>
-    {% if request.user.module %}
-      {{ request.user.module.code }} — {{ request.user.module.name }}
-    {% else %}
-      <span class="muted">Not assigned</span>
-    {% endif %}
+  <p><strong>Modules:</strong>
+    {% with request.user.modules.all as mods %}
+      {% if mods %}
+        {{ mods|join:", " }}
+      {% else %}
+        <span class="muted">No modules enrolled</span>
+      {% endif %}
+    {% endwith %}
   </p>
 </section>

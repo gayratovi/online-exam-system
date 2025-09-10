@@ -4,12 +4,11 @@ from django.utils import timezone
 from exams.models import Module, Exam
 
 class Command(BaseCommand):
-    help = "Create 1–3 exams per module: first closed, second open, third upcoming."
+    help = "Reset and create exactly 3 exams per module: one closed, one open, one upcoming."
 
     def handle(self, *args, **opts):
         now = timezone.now()
         titles_by_module = {
-            # you can customize titles per module code if you want
             "MOD001": ["Final Knowledge Check", "Intro Weekly Quiz", "Intro Project Quiz"],
             "MOD002": ["Algorithms Midterm", "Greedy & DP Quiz", "Graphs Practice"],
             "MOD003": ["Data Structures Test", "Trees & Heaps Quiz", "Hashing Practice"],
@@ -18,37 +17,46 @@ class Command(BaseCommand):
             "MOD006": ["OS Concepts Quiz", "Processes & Threads Quiz", "Memory & Filesystems"],
         }
 
-        for m in Module.objects.all().order_by('code'):
-            titles = titles_by_module.get(m.code, [f"{m.code} — Exam A", f"{m.code} — Exam B", f"{m.code} — Exam C"])
-            exams = []
-            for i, title in enumerate(titles[:3], start=1):
-                defaults = {
-                    "description": f"{title} for {m.code}",
-                    "duration_minutes": 60,
-                }
-                exam, _ = Exam.objects.get_or_create(module=m, title=title, defaults=defaults)
-                exams.append(exam)
+        for m in Module.objects.all().order_by("code"):
+            # Delete old exams for this module
+            Exam.objects.filter(module=m).delete()
 
-            # timings: 1 closed, 1 open, others upcoming
-            if exams:
-                e = exams[0]
-                e.opens_at = now - timedelta(days=14)
-                e.closes_at = now - timedelta(days=7)
-                e.duration_minutes = e.duration_minutes or 60
-                e.is_active = True
-                e.save()
-            if len(exams) >= 2:
-                e = exams[1]
-                e.opens_at = now - timedelta(days=1)
-                e.closes_at = now + timedelta(days=7)
-                e.duration_minutes = e.duration_minutes or 60
-                e.is_active = True
-                e.save()
-            for e in exams[2:]:
-                e.opens_at = now + timedelta(days=30)
-                e.closes_at = now + timedelta(days=37)
-                e.duration_minutes = e.duration_minutes or 60
-                e.is_active = True
-                e.save()
+            titles = titles_by_module.get(
+                m.code,
+                [f"{m.code} — Exam A", f"{m.code} — Exam B", f"{m.code} — Exam C"],
+            )
 
-        self.stdout.write(self.style.SUCCESS("Exams seeded / normalized."))
+            # 1. Closed exam
+            Exam.objects.create(
+                module=m,
+                title=titles[0],
+                description=f"{titles[0]} for {m.code}",
+                duration_minutes=60,
+                opens_at=now - timedelta(days=30),
+                closes_at=now - timedelta(days=20),
+                is_active=True,
+            )
+
+            # 2. Open exam
+            Exam.objects.create(
+                module=m,
+                title=titles[1],
+                description=f"{titles[1]} for {m.code}",
+                duration_minutes=60,
+                opens_at=now - timedelta(days=3),
+                closes_at=now + timedelta(days=5),
+                is_active=True,
+            )
+
+            # 3. Upcoming exam
+            Exam.objects.create(
+                module=m,
+                title=titles[2],
+                description=f"{titles[2]} for {m.code}",
+                duration_minutes=60,
+                opens_at=now + timedelta(days=15),
+                closes_at=now + timedelta(days=25),
+                is_active=True,
+            )
+
+        self.stdout.write(self.style.SUCCESS("✅ Exams reset: 1 closed, 1 open, 1 upcoming per module."))

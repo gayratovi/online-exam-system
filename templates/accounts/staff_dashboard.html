@@ -26,10 +26,7 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Computer Science Success School (CSSS)</h1>
-    <nav><a href="{% url 'logout' %}">Logout</a></nav>
-  </header>
+{% include "partials/staff_header.html" %}
 
   <!-- 🔔 Messages block -->
   {% if messages %}
@@ -43,15 +40,6 @@
   {% endif %}
 
   <section>
-    <h2>Staff Dashboard</h2>
-    <p><strong>Name:</strong> {{ teacher.get_full_name|default:teacher.username }}</p>
-    <p><strong>Email:</strong> {{ teacher.email }}</p>
-    <p><strong>Module:</strong> 
-      {% if module %}{{ module.code }} — {{ module.name }}{% else %}
-      <span class="muted">Not assigned</span>
-      {% endif %}
-    </p>
-
     <div class="topbar" style="margin: 12px 0;">
       <a class="btn" href="{% url 'create_exam' %}">➕ Create New Exam</a>
       <a href="{% url 'staff_results_overview' %}">📊 Results Overview</a>
@@ -88,7 +76,11 @@
                 {% if exam.is_open_now %}
                   <span class="pill pill-open">Open now</span>
                 {% else %}
-                  <span class="pill pill-closed">Closed / Not yet open</span>
+                  {% if exam.opens_at and exam.opens_at > now %}
+                    <span class="pill pill-closed">Not yet open</span>
+                  {% else %}
+                    <span class="pill pill-closed">Closed</span>
+                  {% endif %}
                 {% endif %}
               {% endif %}
             </td>

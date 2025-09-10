@@ -9,7 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Accounts (login/register/logout)
-    path('accounts/', include('accounts.urls')),
+    path('', include('accounts.urls')),
 
     # Staff-facing
     path('staff/', include('exams.urls_staff')),

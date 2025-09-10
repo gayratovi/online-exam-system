@@ -2,6 +2,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .forms import RegistrationForm, LoginForm
+from django.utils import timezone
 
 # Exams/attempts for dashboards
 from exams.models import Exam, StudentExamAttempt
@@ -69,13 +70,17 @@ def student_dashboard(request):
                 e.status = 'In Progress'
                 e.attempt_id = att['id']
         else:
-            e.status = 'Not Started'
+            if not e.is_open_now() and e.closes_at and timezone.now() > e.closes_at:
+                e.status = 'Missed'
+            else:
+                e.status = 'Not Started'
             e.attempt_id = None
         exams.append(e)
 
     return render(request, 'accounts/student_dashboard.html', {
         'modules': modules,
         'exams': exams,
+        'now': timezone.now(),
     })
 
 
@@ -95,6 +100,7 @@ def staff_dashboard(request):
         'teacher': teacher,
         'module': teacher.module,
         'exams': exams,
+        'now': timezone.now(),
     })
 
 
@@ -106,4 +112,6 @@ def role_based_redirect(request):
         return redirect('staff_dashboard')
     if role == 'student':
         return redirect('student_dashboard')
+    if role == "admin":  # ✅ add admin
+        return redirect("/admin/")
     return redirect('login')

@@ -25,30 +25,7 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>Computer Science Success School (CSSS)</h1>
-        <nav>
-            <a href="{% url 'logout' %}">Logout</a>
-        </nav>
-    </header>
-
-        {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-            {{ message }}
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    
-    <section>
-        <h2>Student Dashboard</h2>
-        <p><strong>Name:</strong> {{ request.user.get_full_name|default:request.user.username }}</p>
-        <p><strong>Student ID:</strong> {{ request.user.id }}</p>
-        <p><strong>Email:</strong> {{ request.user.email }}</p>
-    </section>
-
+    {% include "partials/student_header.html" %}
     <section>
         <h3>Your Modules & Exams</h3>
         {% if modules %}
@@ -75,17 +52,23 @@
                     </td>
                     <td>{{ exam.duration_minutes }} min</td>
                     <td>
-                        {% if exam.is_open_now %}
-                            <span class="pill pill-open">Open</span>
+                      {% if exam.is_open_now %}
+                        <span class="pill pill-open">Open now</span>
+                      {% else %}
+                        {% if exam.opens_at and exam.opens_at > now %}
+                          <span class="pill pill-closed">Not yet open</span>
                         {% else %}
-                            <span class="pill pill-closed">Closed</span>
+                          <span class="pill pill-closed">Closed</span>
                         {% endif %}
+                      {% endif %}
                     </td>
                     <td>
                         {% if exam.status == "Completed" %}
                             <span class="pill pill-closed">Completed</span>
                         {% elif exam.status == "In Progress" %}
                             <span class="pill pill-progress">In Progress</span>
+                        {% elif exam.status == "Missed" %}
+                            <span class="pill pill-closed">Missed</span>
                         {% else %}
                             <span class="pill">Not Started</span>
                         {% endif %}
@@ -96,7 +79,7 @@
                         {% elif exam.status == "In Progress" %}
                             <a href="{% url 'take_exam_start' exam.id %}">Resume</a>
                         {% elif exam.is_open_now %}
-                            <a href="{% url 'take_exam_start' exam.id %}">Start Exam</a>
+                            <a href="{% url 'exam_instructions' exam.id %}">Start Exam</a>
                         {% else %}
                             —
                         {% endif %}
