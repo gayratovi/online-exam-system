@@ -1,90 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>{{ exam.title }} – Result</title>
-    <style>
-        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-        .scorebox { 
-            margin: 12px 0; 
-            padding: 12px; 
-            border-radius: 8px; 
-            background: #f7f7f7; 
-            font-size: 18px;
-        }
-        .scorebox strong { font-size: 22px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
-        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-        th { background: #f7f7f7; text-align: left; }
-        .correct { color: green; font-weight: bold; }
-        .wrong { color: #a00; font-weight: bold; }
-        .backlink { margin-top: 16px; display: inline-block; }
-    </style>
-</head>
-<body>
-    
-    <h2>{{ exam.title }} – Your Result</h2>
+{% extends "base.html" %}
 
-    <div class="scorebox">
-        <p><strong>Score: {{ score }}%</strong></p>
-        <p>Correct: {{ correct }} / {{ total }}</p>
+{% block title %}{{ exam.title }} – Result | CSSS{% endblock %}
+
+{% block content %}
+  <section class="mt-4">
+    <h2 class="mb-3">{{ exam.title }} – Your Result</h2>
+
+    <!-- Score summary -->
+    <div class="alert alert-secondary">
+      <p class="mb-1"><strong>Score:</strong> {{ score }}%</p>
+      <p class="mb-1">Correct: {{ correct }} / {{ total }}</p>
+      <p class="mb-0"><strong>Duration:</strong> {{ exam.duration_minutes }} minutes</p>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Question</th>
-                <th>Your Answer</th>
-                <th>Correct Answer</th>
-                <th>Result</th>
-            </tr>
+    <!-- Questions table -->
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Question</th>
+            <th>Your Answer</th>
+            <th>Correct Answer</th>
+            <th>Result</th>
+          </tr>
         </thead>
-            <tbody>
-                {% for a in answers %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ a.question.question_text }}</td>
-            
-                    <!-- Student's Answer -->
-                    <td>
-                        {% if a.question.question_type == "MCQ" %}
-                            {% if a.selected_answer == "a" %}A) {{ a.question.option_a }}
-                            {% elif a.selected_answer == "b" %}B) {{ a.question.option_b }}
-                            {% elif a.selected_answer == "c" %}C) {{ a.question.option_c }}
-                            {% elif a.selected_answer == "d" %}D) {{ a.question.option_d }}
-                            {% else %}—
-                            {% endif %}
-                        {% else %}
-                            {{ a.selected_answer }}
-                        {% endif %}
-                    </td>
-            
-                    <!-- Correct Answer -->
-                    <td>
-                        {% if a.question.question_type == "MCQ" %}
-                            {% if a.question.correct_answer == "a" %}A) {{ a.question.option_a }}
-                            {% elif a.question.correct_answer == "b" %}B) {{ a.question.option_b }}
-                            {% elif a.question.correct_answer == "c" %}C) {{ a.question.option_c }}
-                            {% elif a.question.correct_answer == "d" %}D) {{ a.question.option_d }}
-                            {% endif %}
-                        {% else %}
-                            {{ a.question.correct_answer }}
-                        {% endif %}
-                    </td>
-            
-                    <!-- Correct/Wrong Indicator -->
-                    <td>
-                        {% if a.is_correct %}
-                            <span class="correct">✅ Correct</span>
-                        {% else %}
-                            <span class="wrong">❌ Wrong</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-    </table>
+        <tbody>
+          {% for a in answers %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ a.question.question_text }}</td>
 
-    <a class="backlink" href="{% url 'student_dashboard' %}">← Back to Dashboard</a>
-</body>
-</html>
+              <!-- Student's Answer -->
+              <td>
+                {% if a.question.question_type == "MCQ" %}
+                  {% if a.selected_answer == "a" %}A) {{ a.question.option_a }}
+                  {% elif a.selected_answer == "b" %}B) {{ a.question.option_b }}
+                  {% elif a.selected_answer == "c" %}C) {{ a.question.option_c }}
+                  {% elif a.selected_answer == "d" %}D) {{ a.question.option_d }}
+                  {% else %}<span class="text-muted">—</span>
+                  {% endif %}
+                {% else %}
+                  {{ a.selected_answer|default:"—" }}
+                {% endif %}
+              </td>
+
+              <!-- Correct Answer -->
+              <td>
+                {% if a.question.question_type == "MCQ" %}
+                  {% if a.question.correct_answer == "a" %}A) {{ a.question.option_a }}
+                  {% elif a.question.correct_answer == "b" %}B) {{ a.question.option_b }}
+                  {% elif a.question.correct_answer == "c" %}C) {{ a.question.option_c }}
+                  {% elif a.question.correct_answer == "d" %}D) {{ a.question.option_d }}
+                  {% endif %}
+                {% else %}
+                  {{ a.question.correct_answer }}
+                {% endif %}
+              </td>
+
+              <!-- Correct/Wrong Indicator -->
+              <td>
+                {% if a.is_correct %}
+                  <span class="badge bg-success status-badge">Correct</span>
+                {% else %}
+                  <span class="badge bg-danger status-badge">Wrong</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <a class="btn btn-outline-secondary mt-3" href="{% url 'student_dashboard' %}">← Back to Dashboard</a>
+  </section>
+{% endblock %}
