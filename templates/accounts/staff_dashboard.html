@@ -1,91 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>CSSS – Staff Dashboard</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
-    header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; }
-    h1 { font-size: 22px; margin: 0; }
-    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
-    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-    th { background: #f7f7f7; text-align: left; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #ddd; }
-    .pill-open   { background:#e8f6ef; color:#0f5132; border-color:#badbcc; }
-    .pill-closed { background:#fdecea; color:#842029; border-color:#f5c2c7; }
-    .topbar a { margin-right: 10px; text-decoration:none; }
-    .btn { padding:6px 12px; border-radius:6px; text-decoration:none; background:#0d6efd; color:#fff; }
-    .btn:hover { background:#0b5ed7; }
-    .muted { color:#666; }
+{% extends "base.html" %}
 
-    /* 🔔 Messages styling */
-    ul.messages { list-style: none; padding: 0; margin: 0 0 15px 0; }
-    ul.messages li { padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; }
-    ul.messages li.error { background: #fdecea; color: #842029; border: 1px solid #f5c2c7; }
-    ul.messages li.success { background: #e8f6ef; color: #0f5132; border: 1px solid #badbcc; }
-    ul.messages li.info { background: #e7f1ff; color: #084298; border: 1px solid #b6d4fe; }
-  </style>
-</head>
-<body>
-{% include "partials/staff_header.html" %}
+{% block title %}Staff Dashboard | CSSS{% endblock %}
 
-  <section>
-    <div class="topbar" style="margin: 12px 0;">
-      <a class="btn" href="{% url 'create_exam' %}">➕ Create New Exam</a>
-      <a href="{% url 'staff_results_overview' %}">📊 Results Overview</a>
+{% block content %}
+  {% include "partials/staff_header.html" %}
+
+  <section class="mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Your Exams</h2>
+      <div>
+        <a class="btn btn-primary me-2" href="{% url 'create_exam' %}">➕ Create New Exam</a>
+        <a class="btn btn-outline-secondary" href="{% url 'staff_results_overview' %}">📊 Results Overview</a>
+      </div>
     </div>
-  </section>
 
-  <section>
-    <h3>Exams for {% if module %}{{ module.code }} — {{ module.name }}{% else %}—{% endif %}</h3>
+    <h5 class="mb-3">
+      Module: 
+      {% if module %}
+        <span class="fw-semibold">{{ module.code }}</span> — {{ module.name }}
+      {% else %}
+        <span class="text-muted">Not assigned</span>
+      {% endif %}
+    </h5>
+
     {% if exams %}
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Opens → Closes</th>
-            <th>Duration</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Analytics</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for exam in exams %}
-          <tr>
-            <td>{{ exam.title }}</td>
-            <td>
-              {% if exam.opens_at %}{{ exam.opens_at }}{% else %}—{% endif %} →
-              {% if exam.closes_at %}{{ exam.closes_at }}{% else %}—{% endif %}
-            </td>
-            <td>{{ exam.duration_minutes }} min</td>
-            <td>
-              {% if not exam.is_active %}
-                <span class="pill">Inactive</span>
-              {% else %}
-                {% if exam.is_open_now %}
-                  <span class="pill pill-open">Open now</span>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <colgroup>
+            <col style="width: 46%"> <!-- Title -->
+            <col style="width: 13%"> <!-- Status -->
+            <col style="width: 13%"> <!-- Created -->
+            <col style="width: 20%"> <!-- Actions -->
+          </colgroup>
+          <thead class="table-dark">
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for exam in exams %}
+            <tr>
+              <td class="fw-semibold">{{ exam.title }}</td>
+              <td>
+                {% if not exam.is_active %}
+                  <span class="badge status-badge bg-secondary">Inactive</span>
+                {% elif exam.is_open_now %}
+                  <span class="badge status-badge bg-success">Open now</span>
+                {% elif exam.opens_at and exam.opens_at > now %}
+                  <span class="badge status-badge bg-secondary">Not yet open</span>
                 {% else %}
-                  {% if exam.opens_at and exam.opens_at > now %}
-                    <span class="pill pill-closed">Not yet open</span>
-                  {% else %}
-                    <span class="pill pill-closed">Closed</span>
-                  {% endif %}
+                  <span class="badge status-badge bg-danger">Closed</span>
                 {% endif %}
-              {% endif %}
-            </td>
-            <td>{{ exam.created_at }}</td>
-            <td>
-              <a href="{% url 'staff_exam_results' exam.id %}">Results</a> |
-              <a href="{% url 'staff_exam_manage' exam.id %}">Manage</a>|
-              <a href="{% url 'staff_exam_results_export_csv' exam.id %}">Export CSV</a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+              </td>
+              <td>{{ exam.created_at|date:"M d, Y" }}</td>
+              <td>
+                <a href="{% url 'staff_exam_results' exam.id %}" class="btn btn-sm btn-outline-primary">Results</a>
+                <a href="{% url 'staff_exam_manage' exam.id %}" class="btn btn-sm btn-outline-secondary">Manage</a>
+                <a href="{% url 'staff_exam_results_export_csv' exam.id %}" class="btn btn-sm btn-outline-success">Export CSV</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     {% else %}
-      <p>No exams yet. Create your first exam with the button above.</p>
+      <div class="alert alert-info">No exams yet. Create your first exam using the button above.</div>
     {% endif %}
   </section>
-</body>
-</html>
+{% endblock %}

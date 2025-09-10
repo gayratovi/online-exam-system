@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,7 +26,12 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
-    <a class="navbar-brand" href="/">CSSS</a>
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <!-- Logo -->
+      <img src="{% static 'images/csss-logo.png' %}" alt="CSSS Logo" height="32" class="me-2">
+      <!-- Full name -->
+      <span>Computer Science Success School</span>
+    </a>
     <div class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto">
         {% if user.is_authenticated %}

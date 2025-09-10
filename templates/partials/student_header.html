@@ -1,21 +1,12 @@
 <header class="mb-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 m-0">Computer Science Success School (CSSS)</h1>
+    <h1 class="h4 m-0">Computer Science Success School</h1>
     <nav>
       <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary btn-sm me-2">← Dashboard</a>
       <a href="{% url 'password_change' %}" class="btn btn-outline-warning btn-sm me-2">🔑 Change Password</a>
       <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">🚪 Logout</a>
     </nav>
   </div>
-
-  <!-- 🔔 Messages block -->
-  {% if messages %}
-    <div class="mb-3">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
 
   <section class="card p-3">
     <h2 class="h5 mb-3">Student Information</h2>

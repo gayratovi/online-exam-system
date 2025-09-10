@@ -1,117 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Manage Questions – {{ exam.title }}</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 20px; }
-    h2 { margin-bottom: 5px; }
-    .muted { color:#666; font-size:14px; }
-    form { max-width: 760px; margin-bottom: 24px; }
-    fieldset { border:1px solid #ddd; padding:16px; border-radius:8px; margin-bottom:20px; }
-    legend { font-weight:bold; }
-    label { display:block; margin-top:10px; font-size:14px; }
-    input, textarea, select { width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px; }
-    .btn { padding:8px 14px; border:none; border-radius:6px; cursor:pointer; text-decoration:none; }
-    .btn-primary { background:#0d6efd; color:white; }
-    .btn-primary:hover { background:#0b5ed7; }
-    .btn-secondary { background:#6c757d; color:white; }
-    .btn-secondary:hover { background:#5c636a; }
-    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
-    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-    th { background: #f7f7f7; text-align: left; }
-  </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Manage Questions – {{ exam.title }} | CSSS{% endblock %}
+
+{% block content %}
   {% include "partials/staff_header.html" %}
 
-  <h2>Manage Questions for <em>{{ exam.title }}</em></h2>
-  <p class="muted">{{ exam.module.code }} — {{ exam.module.name }}</p>
+  <section class="mx-auto" style="max-width: 800px;">
+    <h2 class="mb-1">Manage Questions for <em>{{ exam.title }}</em></h2>
+    <p class="text-muted mb-4">{{ exam.module.code }} — {{ exam.module.name }}</p>
 
-  <!-- 🔹 Add Question Form -->
-  <form method="post" action="">
+    <!-- 🔹 Add Question Form -->
+    <form method="post" class="card p-4 shadow-sm mb-4">
       {% csrf_token %}
-    
+
       {% if q_form.non_field_errors %}
-        <div style="color:red; margin-bottom:10px;">
-          {{ q_form.non_field_errors }}
-        </div>
+        <div class="alert alert-danger">{{ q_form.non_field_errors }}</div>
       {% endif %}
-    
-      <fieldset>
-        <legend>Add a New Question</legend>
-    
-        <label>Question Text</label>
-        {{ q_form.question_text }}
-        {{ q_form.question_text.errors }}
-    
-        <label>Question Type</label>
-        {{ q_form.question_type }}
-        {{ q_form.question_type.errors }}
-    
-        <div id="mcq-block">
-          <label>Option A</label> {{ q_form.option_a }} {{ q_form.option_a.errors }}
-          <label>Option B</label> {{ q_form.option_b }} {{ q_form.option_b.errors }}
-          <label>Option C</label> {{ q_form.option_c }} {{ q_form.option_c.errors }}
-          <label>Option D</label> {{ q_form.option_d }} {{ q_form.option_d.errors }}
-          <small class="muted">For MCQ, Correct Answer must be A, B, C, or D.</small>
+
+      <fieldset class="mb-3">
+        <legend class="h6">Add a New Question</legend>
+
+        <div class="mb-3">
+          <label for="{{ q_form.question_text.id_for_label }}" class="form-label">Question Text</label>
+          <textarea name="{{ q_form.question_text.name }}" id="{{ q_form.question_text.id_for_label }}"
+                    class="form-control">{{ q_form.question_text.value|default_if_none:'' }}</textarea>
+          {{ q_form.question_text.errors }}
         </div>
-    
-        <label>Correct Answer</label>
-        {{ q_form.correct_answer }}
-        {{ q_form.correct_answer.errors }}
+
+        <div class="mb-3">
+          <label for="{{ q_form.question_type.id_for_label }}" class="form-label">Question Type</label>
+          <select name="{{ q_form.question_type.name }}" id="{{ q_form.question_type.id_for_label }}"
+                  class="form-control">
+            {% for val, label in q_form.question_type.field.choices %}
+              <option value="{{ val }}" {% if q_form.question_type.value == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          {{ q_form.question_type.errors }}
+        </div>
+
+        <!-- MCQ Block -->
+        <div id="mcq-block">
+          <div class="mb-3">
+            <label class="form-label">Option A</label>
+            <input type="text" name="{{ q_form.option_a.name }}" value="{{ q_form.option_a.value|default_if_none:'' }}" class="form-control">
+            {{ q_form.option_a.errors }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Option B</label>
+            <input type="text" name="{{ q_form.option_b.name }}" value="{{ q_form.option_b.value|default_if_none:'' }}" class="form-control">
+            {{ q_form.option_b.errors }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Option C</label>
+            <input type="text" name="{{ q_form.option_c.name }}" value="{{ q_form.option_c.value|default_if_none:'' }}" class="form-control">
+            {{ q_form.option_c.errors }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Option D</label>
+            <input type="text" name="{{ q_form.option_d.name }}" value="{{ q_form.option_d.value|default_if_none:'' }}" class="form-control">
+            {{ q_form.option_d.errors }}
+          </div>
+          <small class="text-muted">For MCQ, Correct Answer must be A, B, C, or D.</small>
+        </div>
+
+        <div class="mb-3">
+          <label for="{{ q_form.correct_answer.id_for_label }}" class="form-label">Correct Answer</label>
+          <input type="text" name="{{ q_form.correct_answer.name }}" id="{{ q_form.correct_answer.id_for_label }}"
+                 value="{{ q_form.correct_answer.value|default_if_none:'' }}" class="form-control">
+          {{ q_form.correct_answer.errors }}
+        </div>
       </fieldset>
-    
-      <div style="margin-top:12px;">
-        <button type="submit" class="btn btn-primary">➕ Add Question</button>
+
+      <button type="submit" class="btn btn-primary w-100">➕ Add Question</button>
+    </form>
+
+    <!-- 🔹 Existing Questions -->
+    <h3>Questions in this Exam</h3>
+    {% if linked %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Type</th>
+              <th>Question</th>
+              <th>Options</th>
+              <th>Correct</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for link in linked %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ link.question.get_question_type_display }}</td>
+                <td>{{ link.question.question_text }}</td>
+                <td>
+                  {% if link.question.question_type == 'MCQ' %}
+                    A) {{ link.question.option_a }}<br>
+                    B) {{ link.question.option_b }}<br>
+                    C) {{ link.question.option_c }}<br>
+                    D) {{ link.question.option_d }}
+                  {% else %} — {% endif %}
+                </td>
+                <td>{{ link.question.correct_answer }}</td>
+                <td>
+                  <a class="btn btn-sm btn-outline-danger"
+                     href="{% url 'staff_exam_question_delete' exam.id link.question.id %}"
+                     onclick="return confirm('Remove this question from the exam?');">
+                     Remove
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-  </form>
+    {% else %}
+      <div class="alert alert-info">No questions yet — add your first one above.</div>
+    {% endif %}
 
-
-  <!-- 🔹 Existing Questions -->
-  <h3>Questions in this Exam</h3>
-  {% if linked %}
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Type</th>
-          <th>Question</th>
-          <th>Options</th>
-          <th>Correct</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for link in linked %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ link.question.get_question_type_display }}</td>
-            <td>{{ link.question.question_text }}</td>
-            <td>
-              {% if link.question.question_type == 'MCQ' %}
-                A) {{ link.question.option_a }}<br>
-                B) {{ link.question.option_b }}<br>
-                C) {{ link.question.option_c }}<br>
-                D) {{ link.question.option_d }}
-              {% else %} — {% endif %}
-            </td>
-            <td>{{ link.question.correct_answer }}</td>
-            <td>
-              <a class="btn btn-secondary" href="{% url 'staff_exam_question_delete' exam.id link.question.id %}"
-                 onclick="return confirm('Remove this question from the exam?');">Remove</a>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p class="muted">No questions yet — add your first one above.</p>
-  {% endif %}
-  
-    <div style="margin-top: 20px;">
-    <a class="btn btn-secondary" href="{% url 'staff_exam_manage' exam.id %}">← Back to Exam</a>
-    <a class="btn btn-primary" href="{% url 'staff_dashboard' %}">Finish</a>
-  </div>
+    <div class="mt-3 d-flex justify-content-between">
+      <a class="btn btn-outline-secondary" href="{% url 'staff_exam_manage' exam.id %}">← Back to Exam</a>
+      <a class="btn btn-primary" href="{% url 'staff_dashboard' %}">Finish</a>
+    </div>
+  </section>
 
   <script>
     // Toggle MCQ options dynamically
@@ -124,5 +137,4 @@
     toggleMCQ();
     if (typeSel) typeSel.addEventListener('change', toggleMCQ);
   </script>
-</body>
-</html>
+{% endblock %}
