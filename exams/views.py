@@ -32,8 +32,8 @@ def create_exam_view(request):
 
 
 @login_required
-def staff_exam_questions_manage_view(request, exam_id):
-    """Step 2: after creating an exam, add questions inline."""
+def staff_exam_manage_view(request, exam_id):
+    """Page to edit exam details and access question management."""
     if request.user.role != 'staff':
         return redirect('login')
 
@@ -42,21 +42,57 @@ def staff_exam_questions_manage_view(request, exam_id):
         messages.error(request, "You can only manage exams in your module.")
         return redirect('staff_dashboard')
 
-    # Process "add question" form
+    if request.method == "POST":
+        form = ExamCreationForm(request.POST, instance=exam)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Exam details updated.")
+            return redirect('staff_exam_manage', exam_id=exam.id)
+    else:
+        form = ExamCreationForm(instance=exam)
+
+    return render(request, 'exams/manage_exam.html', {
+        'exam': exam,
+        'form': form,
+    })
+
+
+@login_required
+def staff_exam_questions_manage_view(request, exam_id):
+    """Separate page to manage questions of an exam."""
+    if request.user.role != 'staff':
+        return redirect('login')
+
+    exam = get_object_or_404(Exam, pk=exam_id)
+    if exam.module != request.user.module:
+        messages.error(request, "You can only manage exams in your module.")
+        return redirect('staff_dashboard')
+
+    # --- Add Question Form ---
     if request.method == "POST":
         q_form = NewQuestionForExamForm(request.POST)
         if q_form.is_valid():
-            # Create Question in exam's module
             q = q_form.save(commit=False)
+
+            # Ensure module is always set (required field)
             q.module = exam.module
             q.save()
-            ExamQuestion.objects.get_or_create(exam=exam, question=q)
-            messages.success(request, "Question added to the exam.")
+
+            # Always link to exam
+            eq, created = ExamQuestion.objects.get_or_create(exam=exam, question=q)
+
+            if created:
+                messages.success(request, f"Question added: {q.question_text[:50]}...")
+            else:
+                messages.info(request, "This question was already linked to the exam.")
+
             return redirect('staff_exam_questions_manage', exam_id=exam.id)
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
         q_form = NewQuestionForExamForm()
 
-    # Existing questions in this exam
+    # Existing questions linked to this exam
     linked = (ExamQuestion.objects
               .filter(exam=exam)
               .select_related('question')
@@ -84,6 +120,25 @@ def staff_exam_question_delete_view(request, exam_id, question_id):
     eq.delete()
     messages.success(request, "Question removed from the exam.")
     return redirect('staff_exam_questions_manage', exam_id=exam.id)
+
+
+@login_required
+def staff_exam_delete_view(request, exam_id):
+    """Delete an exam completely (only from teacher’s module)."""
+    if request.user.role != 'staff':
+        return redirect('login')
+
+    exam = get_object_or_404(Exam, pk=exam_id)
+    if exam.module != request.user.module:
+        messages.error(request, "You can only delete exams in your own module.")
+        return redirect('staff_dashboard')
+
+    if request.method == "POST":
+        exam.delete()
+        messages.success(request, "Exam deleted successfully.")
+        return redirect('staff_dashboard')
+
+    return redirect('staff_exam_manage', exam_id=exam.id)
 
 # ---------- STAFF ANALYTICS ----------
 

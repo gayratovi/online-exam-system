@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Delete Exam</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; }
+    .danger { background:#dc3545; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; }
+    .danger:hover { background:#bb2d3b; }
+    .btn { padding:10px 20px; border:none; border-radius:6px; background:#6c757d; color:white; text-decoration:none; }
+    .btn:hover { background:#5c636a; }
+  </style>
+</head>
+<body>
+  {% include "partials/staff_header.html" %}
+
+  <h2>Delete Exam</h2>
+  <p>Are you sure you want to delete the exam <strong>{{ exam.title }}</strong>?  
+  This will also remove all attempts and answers linked to it.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="danger">Yes, Delete</button>
+    <a href="{% url 'staff_dashboard' %}" class="btn">Cancel</a>
+  </form>
+</body>
+</html>
