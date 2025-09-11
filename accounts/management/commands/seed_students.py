@@ -5,7 +5,7 @@ from exams.models import Module
 
 
 class Command(BaseCommand):
-    help = "Seed 123 students with IDs, names, and csss.com emails, enrolled into modules."
+    help = "Replace existing student accounts with 123 fresh students and enroll them into modules."
 
     def handle(self, *args, **options):
         User = get_user_model()
@@ -24,10 +24,16 @@ class Command(BaseCommand):
             m, _ = Module.objects.get_or_create(code=code, defaults={"name": name})
             modules.append(m)
 
+        # --- clear old student accounts ---
+        deleted, _ = User.objects.filter(role="student").delete()
+
         first_names = [
             "Alice", "John", "Maria", "David", "Sara", "Michael", "Emma", "Liam",
             "Olivia", "Noah", "Sophia", "James", "Isabella", "Ethan", "Mia",
-            "Alexander", "Charlotte", "Benjamin", "Amelia", "Lucas", "Harper"
+            "Alexander", "Charlotte", "Benjamin", "Amelia", "Lucas", "Harper",
+            "Nisa", "Islam", "Sabina", "Malika", "Alim", "Rasul", "Malika",
+            "Umar", "Rashid", "Asal", "Balnur", "Medirina", "Madina", "Elnur", "Botir",
+            "Nurek", "Javohir", "Malik", "Hakim", "Sherzod", "Nozima", "Sanam",
         ]
         last_names = [
             "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller",
@@ -35,7 +41,7 @@ class Command(BaseCommand):
             "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin"
         ]
 
-        # --- generate 123 students ---
+        # --- generate new students ---
         prefix = "CSSS25"
         count = 123
         start = 1001
@@ -48,32 +54,27 @@ class Command(BaseCommand):
             first = random.choice(first_names)
             last = random.choice(last_names)
 
-            user, was_created = User.objects.get_or_create(
+            user = User.objects.create_user(
                 username=student_id,
-                defaults={
-                    "email": email,
-                    "first_name": first,
-                    "last_name": last,
-                    "is_active": True,
-                    "role": "student",
-                },
+                email=email,
+                first_name=first,
+                last_name=last,
+                role="student",
+                is_active=True,
+                password="Stu1234!"
             )
 
-            if was_created:
-                user.set_password("Stu1234!")
-                user.save()
-                created += 1
-
-            # enroll in 1–3 random modules
+            # enroll in 2–4 random modules
             if hasattr(user, "modules"):  # M2M
                 for m in random.sample(modules, k=random.choice([2, 3, 4])):
                     user.modules.add(m)
             elif hasattr(user, "module"):  # single FK
-                m = random.choice(modules)
-                user.module = m
+                user.module = random.choice(modules)
                 user.save()
 
+            created += 1
+
         self.stdout.write(self.style.SUCCESS(
-            f"Created {created} new students (total ensured: {count}). "
+            f"Deleted {deleted} old students. Created {created} fresh student accounts. "
             f"Default password = Stu1234!"
         ))

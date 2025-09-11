@@ -1,8 +1,17 @@
 # accounts/admin.py
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group
 from .models import CustomUser, Module
 from exams.models import Exam
+
+# Remove Groups from admin
+admin.site.unregister(Group)
+
+# Change admin site headers and titles
+admin.site.site_header = "CSSS Administration"
+admin.site.site_title = "CSSS Admin Portal"
+admin.site.index_title = "Welcome to the Computer Science Success School Admin"
 
 # -------------------------------
 # Proxy models for clarity
