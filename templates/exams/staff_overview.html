@@ -1,62 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>My Exams — Overview</title>
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:20px; }
-    h1 { font-size: 20px; margin: 0; }
-    nav a { text-decoration:none; margin-left:10px; color:#0d6efd; }
-    nav a:hover { text-decoration:underline; }
-    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
-    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-    th { background:#f7f7f7; text-align:left; }
-    .muted { color:#666; }
-    .actions a { text-decoration:none; color:#0d6efd; }
-    .actions a:hover { text-decoration:underline; }
-  </style>
-</head>
-<body>
-  {% include "partials/staff_header.html" %}
-  <h2>My Exams — Overview</h2>
+{% extends "base.html" %}
 
-  {% if overview %}
-  <table>
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Open → Close</th>
-        <th>Duration</th>
-        <th>Attempts</th>
-        <th>Completed</th>
-        <th>Completion %</th>
-        <th>Avg Score</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for e in overview %}
-      <tr>
-        <td>{{ e.title }}</td>
-        <td>
-          {% if e.opens_at %}{{ e.opens_at }}{% else %}—{% endif %} →
-          {% if e.closes_at %}{{ e.closes_at }}{% else %}—{% endif %}
-        </td>
-        <td>{{ e.duration_minutes }} min</td>
-        <td>{{ e.attempts_total }}</td>
-        <td>{{ e.attempts_completed }}</td>
-        <td>{% if e.completion_pct is not None %}{{ e.completion_pct }}%{% else %}—{% endif %}</td>
-        <td>{% if e.avg_score is not None %}{{ e.avg_score }}%{% else %}—{% endif %}</td>
-        <td class="actions">
-          <a href="{% url 'staff_exam_results' e.id %}">Results</a> |
-          <a href="{% url 'staff_exam_question_stats' e.id %}">Questions</a> |
-          <a href="{% url 'staff_exam_results_export_csv' e.id %}">Export CSV</a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-    <p class="muted">No exams available yet.</p>
-  {% endif %}
-</body>
-</html>
+{% block title %}My Exams — Results Overview | CSSS{% endblock %}
+
+{% block content %}
+  {% include "partials/staff_header.html" %}
+
+  <section class="mt-4">
+    <h2 class="mb-3">My Exams — Results Overview</h2>
+
+    {% if overview %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <colgroup>
+            <col style="width: 20%"> <!-- Title -->
+            <col style="width: 20%"> <!-- Open → Close -->
+            <col style="width: 10%"> <!-- Duration -->
+            <col style="width: 10%"> <!-- Attempts -->
+            <col style="width: 10%"> <!-- Completed -->
+            <col style="width: 10%"> <!-- Completion % -->
+            <col style="width: 10%"> <!-- Avg Score -->
+            <col style="width: 10%"> <!-- Actions -->
+          </colgroup>
+          <thead class="table-dark">
+            <tr>
+              <th>Title</th>
+              <th>Open → Close</th>
+              <th>Duration</th>
+              <th>Attempts</th>
+              <th>Completed</th>
+              <th>Completion %</th>
+              <th>Avg Score</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in overview %}
+              <tr>
+                <td class="fw-semibold">{{ e.title }}</td>
+                <td>
+                  {% if e.opens_at %}{{ e.opens_at|date:"M d, Y H:i" }}{% else %}—{% endif %} →
+                  {% if e.closes_at %}{{ e.closes_at|date:"M d, Y H:i" }}{% else %}—{% endif %}
+                </td>
+                <td>{{ e.duration_minutes }} min</td>
+                <td>{{ e.attempts_total }}</td>
+                <td>{{ e.attempts_completed }}</td>
+                <td>
+                  {% if e.completion_pct is not None %}
+                    {{ e.completion_pct }}%
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if e.avg_score is not None %}
+                    {{ e.avg_score }}%
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'staff_exam_results' e.id %}" class="btn btn-sm btn-outline-primary">Results</a>
+                  <a href="{% url 'staff_exam_question_stats' e.id %}" class="btn btn-sm btn-outline-secondary">Questions</a>
+                  <a href="{% url 'staff_exam_results_export_csv' e.id %}" class="btn btn-sm btn-outline-success">Export CSV</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-info">No exams available yet.</div>
+    {% endif %}
+  </section>
+{% endblock %}

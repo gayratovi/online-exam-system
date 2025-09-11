@@ -1,26 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Delete Exam</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 20px; }
-    .danger { background:#dc3545; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; }
-    .danger:hover { background:#bb2d3b; }
-    .btn { padding:10px 20px; border:none; border-radius:6px; background:#6c757d; color:white; text-decoration:none; }
-    .btn:hover { background:#5c636a; }
-  </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Delete Exam | CSSS{% endblock %}
+
+{% block content %}
   {% include "partials/staff_header.html" %}
 
-  <h2>Delete Exam</h2>
-  <p>Are you sure you want to delete the exam <strong>{{ exam.title }}</strong>?  
-  This will also remove all attempts and answers linked to it.</p>
+  <section class="mx-auto" style="max-width: 600px;">
+    <div class="card border-danger">
+      <div class="card-header bg-danger text-white">
+        <strong>Delete Exam</strong>
+      </div>
+      <div class="card-body">
+        <p>
+          Are you sure you want to delete the exam
+          <strong>{{ exam.title }}</strong>?
+        </p>
+        <p class="text-muted">
+          This will permanently remove all attempts and answers linked to this exam.
+        </p>
 
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="danger">Yes, Delete</button>
-    <a href="{% url 'staff_dashboard' %}" class="btn">Cancel</a>
-  </form>
-</body>
-</html>
+        <form method="post" class="d-flex gap-2">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Yes, Delete</button>
+          <a href="{% url 'staff_dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}
