@@ -111,7 +111,46 @@ The project includes seed commands to populate demo data quickly:
 
 ## 🧪 Running Tests
 
-    python manage.py test
+Run test module:
+
+    # Login tests
+    python manage.py test accounts.tests.test_login
+
+    # Registration tests
+    python manage.py test accounts.tests.test_registration
+
+    # Student exam flow tests
+    python manage.py test exams.tests.test_student_exam_flow
+
+    # Staff exam flow tests
+    python manage.py test exams.tests.test_staff_exam_flow
+
+    # Permissions / access control tests
+    python manage.py test exams.tests.test_permissions
+
+### ✅ Test Coverage Summary
+
+- **Login & Registration**
+  - Student/staff login redirects
+  - Invalid login remains on page
+  - Valid/invalid registration cases
+
+- **Student Exam Flow**
+  - Full exam attempt with correct answers → 100% score
+  - Exam attempt with wrong answers → 0% score
+  - Navigation (next, back, submit) and result page checks
+
+- **Staff Exam Flow**
+  - Exam creation (auto-linked to staff module)
+  - Add/manage/delete exam questions
+  - Results overview, per-exam results, per-question stats
+  - Attempt detail view and CSV export
+
+- **Permissions & Access Control**
+  - Students cannot access staff views
+  - Staff cannot access student views
+  - Anonymous users redirected to login
+  - Staff blocked from managing exams in other modules
 
 ---
 
@@ -119,14 +158,48 @@ The project includes seed commands to populate demo data quickly:
 
     online_exam_system/
     │
-    ├── accounts/         # Custom user model (student, staff, admin), auth, registration, dashboards
-    ├── exams/            # Exam models, attempts, results, analytics, seed commands
-    ├── questions/        # Question models & exam linkage
+    ├── accounts/         
+    │   ├── models.py         # Custom user model (student, staff, admin)
+    │   ├── views.py          # Auth, registration, dashboards
+    │   ├── forms.py          # Registration & login forms
+    │   ├── management/
+    │   │   └── commands/
+    │   │       ├── seed_staff.py       # Seeder for staff users
+    │   │       └── seed_students.py    # Seeder for student users
+    │   └── tests/
+    │       ├── test_login.py           # Login tests
+    │       └── test_registration.py    # Registration tests
     │
-    ├── templates/        # Bootstrap-based HTML templates (students, staff, partials, base)
-    ├── static/           # CSSS logo and other static assets
+    ├── exams/
+    │   ├── models.py         # Exam, ExamQuestion, StudentAttempt, StudentAnswer
+    │   ├── views.py          # Student + staff exam flow, analytics
+    │   ├── forms.py          # Exam creation & question forms
+    │   ├── management/
+    │   │   └── commands/
+    │   │       ├── fix_exam_timings.py       # Adjust exam open/close times
+    │   │       ├── reset_attempts.py         # Reset attempts/answers
+    │   │       ├── seed_exams.py             # Seeder for exams
+    │   │       ├── seed_modules.py           # Seeder for modules
+    │   │       ├── seed_questions.py         # Seeder for questions
+    │   │       └── seed_attempts_results.py  # Seeder for attempts + results
+    │   └── tests/
+    │       ├── test_student_exam_flow.py     # Student exam flow tests
+    │       ├── test_staff_exam_flow.py       # Staff exam flow tests
+    │       └── test_permissions.py           # Role restrictions tests
     │
-    ├── config/           # Django settings, URLs, WSGI
+    ├── questions/
+    │   ├── models.py         # Question model (MCQ, TF, Fill-in-the-gap)
+    │   └── forms.py          # Question creation forms
+    │
+    ├── templates/            # Bootstrap-based HTML templates
+    │   ├── accounts/         # Login, registration, dashboards
+    │   ├── exams/            # Exam flow, results, staff views
+    │   └── base.html         # Global layout
+    │
+    ├── static/               
+    │   └── images/           # CSSS logo
+    │
+    ├── config/               # Django settings, URLs, WSGI
     ├── manage.py
     └── README.md
 
